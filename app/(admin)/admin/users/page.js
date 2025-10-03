@@ -22,6 +22,7 @@ const ProfileCard = () => {
   // State user info
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
+  const [avatarFile, setAvatarFile] = useState(null)
 
   // State đổi mật khẩu
   const [currentPassword, setCurrentPassword] = useState('')
@@ -50,10 +51,17 @@ const ProfileCard = () => {
   const handleAvatarChange = (e) => {
     const file = e.target.files?.[0]
     if (file) {
+      setAvatarFile(file)
       const url = URL.createObjectURL(file)
       setAvatarPreview(url)
       setHasChanges(true)
     }
+  }
+
+  const handleAvatarRemove = () => {
+    setAvatarPreview(null)
+    setAvatarFile(null)
+    setHasChanges(true)
   }
 
   // 🟦 Gửi form cập nhật hồ sơ
@@ -82,11 +90,6 @@ const ProfileCard = () => {
     } finally {
       setUpdatingProfile(false)
     }
-  }
-
-  const handleAvatarRemove = () => {
-    setAvatarPreview(null)
-    setHasChanges(true)
   }
 
   const handleChangePassword = async (e) => {
@@ -125,7 +128,6 @@ const ProfileCard = () => {
           <CardDescription>Thông tin cá nhân</CardDescription>
         </CardHeader>
         <CardContent>
-          {/* <form onSubmit={(e) => e.preventDefault()} className="space-y-6"> */}
           <form onSubmit={handleUpdateProfile} className="space-y-6">
             {/* Avatar */}
             <div className="flex items-center gap-4">
@@ -203,8 +205,9 @@ const ProfileCard = () => {
               <Button
                 type="submit"
                 className="w-full bg-blue-600 text-white hover:bg-blue-500"
+                disabled={updatingProfile}
               >
-                Cập nhật hồ sơ
+                {updatingProfile ? 'Đang cập nhật...' : 'Cập nhật hồ sơ'}
               </Button>
             )}
           </form>
