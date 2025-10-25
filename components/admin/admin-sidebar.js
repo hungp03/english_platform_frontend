@@ -3,7 +3,14 @@ import React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BarChart3, FileText, Users, MessageSquare, Flag, BookOpen
+  BarChart3,
+  FileText,
+  Users,
+  MessageSquare,
+  Flag,
+  BookOpen,
+  ListChecks,
+  HelpCircle,
 } from "lucide-react";
 
 const AdminSidebar = () => {
@@ -18,9 +25,34 @@ const AdminSidebar = () => {
     { title: "Tổng quan", path: "/admin", icon: BarChart3 },
     { title: "Quản lí đề thi", path: "/admin/exams", icon: FileText },
     { title: "Quản lí người dùng", path: "/admin/users", icon: Users },
-    { title: "Quản lí blog", path: "/admin/blogs", icon: MessageSquare },
     { title: "Quản lí khóa học", path: "/admin/courses", icon: BookOpen },
-    { title: "Quản lí report forum", path: "/admin/reports", icon: Flag }
+    { title: "Quản lí phân loại forum", path: "/admin/forum/categories", icon: Flag },
+    { title: "Quản lí report forum", path: "/admin/forum/reports", icon: Flag },
+    {
+      title: "Quản lí danh mục blog",
+      path: "/admin/content/categories",
+      icon: FileText,
+    },
+    {
+      title: "Quản lí blog",
+      path: "/admin/content/posts",
+      icon: MessageSquare,
+    },
+    {
+      title: "Quản lí bình luận",
+      path: "/admin/content/comments",
+      icon: MessageSquare,
+    },
+    {
+      title: "Quản lí loại đề thi",
+      path: "/admin/quiz-types",
+      icon: ListChecks,
+    },
+    {
+      title: "Quản lí đề thi",
+      path: "/admin/quizzes",
+      icon: MessageSquare,
+    },
   ];
 
   return (
