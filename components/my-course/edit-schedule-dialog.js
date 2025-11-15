@@ -16,11 +16,18 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Plus, Trash2, Calendar, Clock } from "lucide-react"
+import { Plus, Trash2, Calendar, Clock, AlertCircle } from "lucide-react"
 import { updateStudyPlan } from "@/lib/api/schedule"
 import { updateStudyPlanSchema } from "@/schema/study-plan"
+import { useAuthStore } from "@/store/auth-store"
+import Link from "next/link"
 
 export default function EditScheduleDialog({ open, onOpenChange, onSuccess, studyPlan }) {
+    const { user } = useAuthStore()
+
+    // Check if user has linked Google account
+    const isGoogleLinked = user?.provider === "GOOGLE"
+
     const {
         register,
         control,
@@ -106,7 +113,8 @@ export default function EditScheduleDialog({ open, onOpenChange, onSuccess, stud
                     startTime: new Date(schedule.startTime).toISOString(),
                     durationMin: parseInt(schedule.durationMin, 10),
                     taskDesc: schedule.taskDesc,
-                    syncToCalendar: schedule.syncToCalendar || false
+                    // Only allow sync if Google is linked
+                    syncToCalendar: isGoogleLinked ? (schedule.syncToCalendar || false) : false
                 }
 
                 // Only include ID if it exists (for existing schedules)
@@ -193,6 +201,20 @@ export default function EditScheduleDialog({ open, onOpenChange, onSuccess, stud
                                 Thêm lịch học
                             </Button>
                         </div>
+
+                        {/* Google Calendar Sync Warning */}
+                        {!isGoogleLinked && (
+                            <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                                <p>
+                                    Bạn cần{" "}
+                                    <Link href="/account" className="underline font-medium hover:text-amber-900">
+                                        liên kết tài khoản Google
+                                    </Link>
+                                    {" "}để sử dụng tính năng đồng bộ với Google Calendar
+                                </p>
+                            </div>
+                        )}
 
                         {fields.map((field, index) => {
                             // Check if this schedule has a database ID (not React Hook Form's field.id)
@@ -291,15 +313,19 @@ export default function EditScheduleDialog({ open, onOpenChange, onSuccess, stud
                                             render={({ field }) => (
                                                 <Checkbox
                                                     id={`schedules.${index}.syncToCalendar`}
-                                                    checked={field.value}
-                                                    onCheckedChange={field.onChange}
-                                                    disabled={isSubmitting}
+                                                    checked={isGoogleLinked ? field.value : false}
+                                                    onCheckedChange={(checked) => {
+                                                        if (isGoogleLinked) {
+                                                            field.onChange(checked)
+                                                        }
+                                                    }}
+                                                    disabled={isSubmitting || !isGoogleLinked}
                                                 />
                                             )}
                                         />
                                         <Label
                                             htmlFor={`schedules.${index}.syncToCalendar`}
-                                            className="text-sm font-normal cursor-pointer"
+                                            className={`text-sm font-normal ${isGoogleLinked ? 'cursor-pointer' : 'cursor-not-allowed text-muted-foreground'}`}
                                         >
                                             Đồng bộ với Google Calendar
                                         </Label>

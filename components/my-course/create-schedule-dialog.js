@@ -16,11 +16,14 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Plus, Trash2, Calendar, Clock, Sparkles } from "lucide-react"
+import { Plus, Trash2, Calendar, Clock, Sparkles, AlertCircle } from "lucide-react"
 import { createStudyPlan, generateAIPlan } from "@/lib/api/schedule"
 import { createStudyPlanSchema } from "@/schema/study-plan"
+import { useAuthStore } from "@/store/auth-store"
+import Link from "next/link"
 
 export default function CreateScheduleDialog({ open, onOpenChange, onSuccess }) {
+    const { user } = useAuthStore()
     const [showAIForm, setShowAIForm] = useState(false)
     const [aiGenerating, setAiGenerating] = useState(false)
     const [aiInputs, setAiInputs] = useState({
@@ -29,6 +32,9 @@ export default function CreateScheduleDialog({ open, onOpenChange, onSuccess }) 
         notes: ""
     })
     const [aiGeneratedPlan, setAiGeneratedPlan] = useState(null)
+
+    // Check if user has linked Google account
+    const isGoogleLinked = user?.provider === "GOOGLE"
 
     const {
         register,
@@ -75,7 +81,8 @@ export default function CreateScheduleDialog({ open, onOpenChange, onSuccess }) 
                 startTime: new Date(schedule.startTime).toISOString(),
                 durationMin: parseInt(schedule.durationMin, 10),
                 taskDesc: schedule.taskDesc,
-                syncToCalendar: schedule.syncToCalendar || false
+                // Only allow sync if Google is linked
+                syncToCalendar: isGoogleLinked ? (schedule.syncToCalendar || false) : false
             }))
 
             const result = await createStudyPlan({
@@ -312,6 +319,20 @@ export default function CreateScheduleDialog({ open, onOpenChange, onSuccess }) 
                             </Button>
                         </div>
 
+                        {/* Google Calendar Sync Warning */}
+                        {!isGoogleLinked && (
+                            <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+                                <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+                                <p>
+                                    Bạn cần{" "}
+                                    <Link href="/account" className="underline font-medium hover:text-amber-900">
+                                        liên kết tài khoản Google
+                                    </Link>
+                                    {" "}để sử dụng tính năng đồng bộ với Google Calendar
+                                </p>
+                            </div>
+                        )}
+
                         {fields.map((field, index) => (
                             <div
                                 key={field.id}
@@ -400,15 +421,19 @@ export default function CreateScheduleDialog({ open, onOpenChange, onSuccess }) 
                                         render={({ field }) => (
                                             <Checkbox
                                                 id={`schedules.${index}.syncToCalendar`}
-                                                checked={field.value}
-                                                onCheckedChange={field.onChange}
-                                                disabled={isSubmitting}
+                                                checked={isGoogleLinked ? field.value : false}
+                                                onCheckedChange={(checked) => {
+                                                    if (isGoogleLinked) {
+                                                        field.onChange(checked)
+                                                    }
+                                                }}
+                                                disabled={isSubmitting || !isGoogleLinked}
                                             />
                                         )}
                                     />
                                     <Label
                                         htmlFor={`schedules.${index}.syncToCalendar`}
-                                        className="text-sm font-normal cursor-pointer"
+                                        className={`text-sm font-normal ${isGoogleLinked ? 'cursor-pointer' : 'cursor-not-allowed text-muted-foreground'}`}
                                     >
                                         Đồng bộ với Google Calendar
                                     </Label>
