@@ -480,6 +480,7 @@ export default function AdminQuizEditorPage() {
           </CardContent>
         </Card>
 
+      {!isNew && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -506,7 +507,9 @@ export default function AdminQuizEditorPage() {
             )}
           </CardContent>
         </Card>
+      )}
 
+      {!isNew && (
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center gap-2 text-base">
@@ -533,6 +536,7 @@ export default function AdminQuizEditorPage() {
             )}
           </CardContent>
         </Card>
+      )}
 
         <div className="flex justify-end gap-3">
           <Button type="button" variant="outline" asChild>
