@@ -1,0 +1,6 @@
+export { CourseHeader } from "./course-header"
+export { CourseInfo } from "./course-info"
+export { CourseDescription } from "./course-description"
+export { CoursePurchase } from "./course-purchase"
+export { CourseModules } from "./course-modules"
+export { CourseModulesSkeleton } from "./course-modules-skeleton"
