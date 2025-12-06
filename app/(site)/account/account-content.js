@@ -77,12 +77,18 @@ const AccountContent = memo(() => {
                         Bài viết diễn đàn
                       </h3>
                       <p className="text-sm text-gray-600">
-                        Xem và quản lý các chủ đề bạn đã đăng
+                        Quản lý bài viết của bạn và bài viết đã lưu
                       </p>
                     </div>
-                    <Link href="/account/forum">
-                      <Button variant="outline">Xem bài viết</Button>
-                    </Link>
+                    <div className="flex gap-2">
+                      <Link href="/account/forum">
+                        <Button variant="outline">Bài của tôi</Button>
+                      </Link>
+                      {/* Thêm nút này */}
+                      <Link href="/account/forum/saved">
+                        <Button variant="outline">Đã lưu</Button>
+                      </Link>
+                    </div>
                   </div>
                 </div>
 

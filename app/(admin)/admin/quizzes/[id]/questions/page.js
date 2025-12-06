@@ -509,14 +509,25 @@ export default function QuizQuestionsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         {/* Left: Context & Explanation */}
         <div className="space-y-4 sm:space-y-6">
-          <ContextEditor
-            contextText={contextText}
-            onContextChange={setContextText}
-            onSave={saveQuizContent}
-            saving={saving}
-            loading={loading}
-            folderPath={folderPath}
-          />
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <FileText className="h-4 w-4" />
+                Ngữ cảnh / Bài đọc
+              </CardTitle>
+              <CardDescription>Nội dung đoạn văn hoặc audio cho các câu hỏi</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ContextEditor
+                contextText={contextText}
+                onContextChange={setContextText}
+                onSave={saveQuizContent}
+                saving={saving}
+                loading={loading}
+                folderPath={folderPath}
+              />
+            </CardContent>
+          </Card>
 
           <Card>
             <CardHeader className="pb-3">
