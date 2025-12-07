@@ -2,7 +2,7 @@
 
 import { toast } from "sonner";
 import { useEffect, useState, useCallback, memo } from "react";
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -36,6 +36,8 @@ import {
   User,
   AlertTriangle,
   ShieldCheck,
+  Lock,   // Import thêm icon Lock
+  Unlock, // Import thêm icon Unlock
 } from "lucide-react";
 import {
   adminGetReports,
@@ -44,6 +46,8 @@ import {
   adminUnhidePost,
   adminDeletePost,
   adminDeleteThread,
+  adminLockThread,   // Import API Lock
+  adminUnlockThread, // Import API Unlock
 } from "@/lib/api/forum";
 
 const PageHeader = memo(function PageHeader() {
@@ -88,9 +92,14 @@ const ReportFilters = memo(function ReportFilters({ type, onTypeChange, onlyOpen
   );
 });
 
-const ReportItem = memo(function ReportItem({ report, onResolve, onDelete, onHide, onUnhide }) {
+// Cập nhật ReportItem để nhận thêm props onLock, onUnlock
+const ReportItem = memo(function ReportItem({ report, onResolve, onDelete, onHide, onUnhide, onLock, onUnlock }) {
   const isResolved = !!report.resolvedAt;
   const isThread = report.targetType === "THREAD";
+
+  // Logic map từ backend: targetPublished = true (là chưa bị ẩn/khóa), false (là đã bị ẩn/khóa)
+  // Với Thread: targetPublished = !isLocked
+  // Với Post: targetPublished = isPublished
 
   return (
     <div className={`border rounded-lg p-4 space-y-3 transition-colors ${isResolved ? 'bg-muted/30' : 'hover:bg-muted/50'}`}>
@@ -176,15 +185,32 @@ const ReportItem = memo(function ReportItem({ report, onResolve, onDelete, onHid
             </Button>
 
             {isThread && (
-              <Button
-                size="sm"
-                variant="outline"
-                className="text-destructive hover:text-destructive"
-                onClick={() => onDelete("THREAD", report.targetId)}
-              >
-                <Trash2 className="h-4 w-4 mr-1" />
-                Xóa chủ đề
-              </Button>
+              <>
+                {/* Logic Khóa/Mở khóa cho Thread */}
+                {report.targetPublished !== false ? (
+                  // targetPublished = true => Chưa khóa => Hiển thị nút Khóa
+                  <Button size="sm" variant="outline" onClick={() => onLock(report.targetId)}>
+                    <Lock className="h-4 w-4 mr-1" />
+                    Khóa
+                  </Button>
+                ) : (
+                  // targetPublished = false => Đã khóa => Hiển thị nút Mở khóa
+                  <Button size="sm" variant="outline" onClick={() => onUnlock(report.targetId)}>
+                    <Unlock className="h-4 w-4 mr-1" />
+                    Mở khóa
+                  </Button>
+                )}
+
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-destructive hover:text-destructive"
+                  onClick={() => onDelete("THREAD", report.targetId)}
+                >
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  Xóa chủ đề
+                </Button>
+              </>
             )}
 
             {!isThread && (
@@ -357,6 +383,34 @@ export default function AdminForumReportsPage() {
     }
   }, []);
 
+  // --- Thêm xử lý Khóa Thread ---
+  const handleLock = useCallback(async (targetId) => {
+    const result = await adminLockThread(targetId);
+    if (result.success) {
+      toast.success("Đã khóa chủ đề");
+      // Cập nhật targetPublished = false (nghĩa là đã bị khóa/ẩn)
+      setItems(prev => prev.map(item => 
+        item.targetId === targetId ? { ...item, targetPublished: false } : item
+      ));
+    } else {
+      toast.error(result.error || "Không thể khóa chủ đề");
+    }
+  }, []);
+
+  // --- Thêm xử lý Mở khóa Thread ---
+  const handleUnlock = useCallback(async (targetId) => {
+    const result = await adminUnlockThread(targetId);
+    if (result.success) {
+      toast.success("Đã mở khóa chủ đề");
+      // Cập nhật targetPublished = true (nghĩa là đang hiển thị/mở)
+      setItems(prev => prev.map(item => 
+        item.targetId === targetId ? { ...item, targetPublished: true } : item
+      ));
+    } else {
+      toast.error(result.error || "Không thể mở khóa chủ đề");
+    }
+  }, []);
+
   const handleDialogClose = useCallback((open) => {
     if (!isDeleting) setDeleteConfirm(prev => ({ ...prev, open }));
   }, [isDeleting]);
@@ -403,6 +457,8 @@ export default function AdminForumReportsPage() {
                   onDelete={openDeleteConfirm}
                   onHide={handleHide}
                   onUnhide={handleUnhide}
+                  onLock={handleLock}     // Truyền prop onLock
+                  onUnlock={handleUnlock} // Truyền prop onUnlock
                 />
               ))}
             </div>

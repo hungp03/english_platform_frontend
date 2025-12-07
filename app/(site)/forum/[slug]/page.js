@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserAvatar } from "@/components/ui/user-avatar";
+import SaveThreadButton from "@/components/forum/save-thread-button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -329,6 +330,9 @@ export default function ThreadDetailPage() {
                     )}
                   </>
                 )}
+                <div className="ml-auto">
+                    <SaveThreadButton threadId={thread.id} initialIsSaved={thread.isSaved} />
+                </div>
               </div>
             </CardHeader>
 
