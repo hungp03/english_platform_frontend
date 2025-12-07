@@ -17,11 +17,9 @@ export default function LearningContent() {
 
     // Zustand store for courses
     const enrollments = useEnrollmentStore((state) => state.enrollments)
-    const pagination = useEnrollmentStore((state) => state.pagination)
     const loading = useEnrollmentStore((state) => state.loading)
     const initialized = useEnrollmentStore((state) => state.initialized)
     const fetchEnrollments = useEnrollmentStore((state) => state.fetchEnrollments)
-    const setPage = useEnrollmentStore((state) => state.setPage)
 
     // State for study schedules
     const [studyPlans, setStudyPlans] = useState([])
@@ -57,10 +55,6 @@ export default function LearningContent() {
             fetchSchedules(schedulesPage, schedulesSort)
         }
     }, [activeTab, schedulesPage, schedulesSort, fetchSchedules])
-
-    const handlePageChange = useCallback((page) => {
-        setPage(page)
-    }, [setPage])
 
     const handleSchedulesPageChange = useCallback((page) => {
         setSchedulesPage(page)
@@ -163,10 +157,8 @@ export default function LearningContent() {
                     ) : (
                         <CoursesList
                             enrollments={enrollments}
-                            pagination={pagination}
                             formatDate={formatDate}
                             getStatusBadge={getStatusBadge}
-                            onPageChange={handlePageChange}
                         />
                     )}
                 </TabsContent>
