@@ -224,13 +224,6 @@ export default function AdminDashboard() {
           Icon={Users}
           trend="up"
         />
-        {/* <StatCard
-          title="Đang hoạt động"
-          value={overview.users.active}
-          change={`${overview.users.activePercentage}%`}
-          Icon={Activity}
-          trend="neutral"
-        /> */}
         <StatCard
           title="Giảng viên"
           value={overview.instructors.total}
@@ -266,8 +259,6 @@ export default function AdminDashboard() {
         <PendingActionsSection pendingActions={pendingActions} />
       )}
 
-      {/* Export CSV Section */}
-      {/* <ExportCSVSection /> */}
       <ExportSection />
 
       {/* Charts Section */}
