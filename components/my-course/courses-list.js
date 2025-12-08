@@ -1,15 +1,12 @@
 import { Card, CardContent } from "@/components/ui/card"
-import { Pagination } from "@/components/ui/pagination"
 import { BookOpen } from "lucide-react"
 import Link from "next/link"
 import EnrollmentCard from "./enrollment-card"
 
 export default function CoursesList({
     enrollments,
-    pagination,
     formatDate,
     getStatusBadge,
-    onPageChange,
 }) {
     if (enrollments.length === 0) {
         return (
@@ -34,27 +31,15 @@ export default function CoursesList({
     }
 
     return (
-        <>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {enrollments.map((enrollment) => (
-                    <EnrollmentCard
-                        key={enrollment.id}
-                        enrollment={enrollment}
-                        formatDate={formatDate}
-                        getStatusBadge={getStatusBadge}
-                    />
-                ))}
-            </div>
-
-            {pagination.pages > 1 && (
-                <div className="flex justify-center mt-8">
-                    <Pagination
-                        totalPages={pagination.pages}
-                        currentPage={pagination.page}
-                        onPageChange={onPageChange}
-                    />
-                </div>
-            )}
-        </>
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {enrollments.map((enrollment) => (
+                <EnrollmentCard
+                    key={enrollment.id}
+                    enrollment={enrollment}
+                    formatDate={formatDate}
+                    getStatusBadge={getStatusBadge}
+                />
+            ))}
+        </div>
     )
 }
