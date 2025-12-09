@@ -1,12 +1,9 @@
 "use client";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from "@/components/ui/card";
 import { BookOpen, XCircle } from "lucide-react";
 
 export default function VerifyError() {
-  const router = useRouter();
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 flex items-center justify-center px-4 py-12">
       <div className="w-full max-w-md space-y-8">
