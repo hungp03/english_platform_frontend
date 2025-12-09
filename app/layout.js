@@ -9,7 +9,7 @@ export default function RootLayout({ children }) {
       <head>
         <link rel="icon" type="image/png" href="/logo.ico" />
       </head>
-      <body className="min-h-screen bg-gray-50">
+      <body className="min-h-screen bg-gray-50" suppressHydrationWarning>
         <GoogleOAuthProviderWrapper>
           <TooltipProvider>
             <Toaster />

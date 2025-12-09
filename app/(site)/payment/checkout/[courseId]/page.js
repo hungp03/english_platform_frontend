@@ -1,16 +1,18 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { CourseInfo } from "@/components/payment/course-info"
 import { PaymentSummary } from "@/components/payment/payment-summary"
 import { PaymentMethods } from "@/components/payment/payment-methods"
+import { VoucherInput } from "@/components/payment/voucher-input"
 import { ShoppingCart, ArrowLeft, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { getCheckoutInfo } from "@/lib/api/course"
 import { createOrder } from "@/lib/api/order"
 import { createPayPalCheckout, createPayOSCheckout } from "@/lib/api/payment"
+import { applyVoucherDirect } from "@/lib/api/voucher"
 
 export default function CourseCheckoutPage() {
   const [selectedPayment, setSelectedPayment] = useState("payOS")
@@ -18,9 +20,22 @@ export default function CourseCheckoutPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [appliedVoucher, setAppliedVoucher] = useState(null)
   const router = useRouter()
   const params = useParams()
   const courseId = params.courseId
+
+  // Calculate discount and final total
+  const discountAmount = useMemo(() => {
+    if (!appliedVoucher?.totalDiscount) return 0
+    return Number(appliedVoucher.totalDiscount)
+  }, [appliedVoucher])
+
+  const finalTotal = useMemo(() => {
+    if (!courseData) return 0
+    const total = courseData.priceCents - discountAmount
+    return total > 0 ? total : 0
+  }, [courseData, discountAmount])
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -47,6 +62,20 @@ export default function CourseCheckoutPage() {
     }
   }, [courseId])
 
+  const handleVoucherApply = useCallback(async (code) => {
+    // Apply voucher for direct checkout (single course)
+    const result = await applyVoucherDirect(code, courseId)
+    if (result.success && result.data?.valid) {
+      setAppliedVoucher(result.data)
+      return result
+    }
+    return result
+  }, [courseId])
+
+  const handleVoucherRemove = useCallback(() => {
+    setAppliedVoucher(null)
+  }, [])
+
   const handlePayment = async () => {
     if (!courseData || isProcessing) return
 
@@ -61,7 +90,8 @@ export default function CourseCheckoutPage() {
             entityType: "COURSE",
             entityId: courseId
           }
-        ]
+        ],
+        voucherCode: appliedVoucher?.code || null
       }
 
       const orderResult = await createOrder(orderRequest)
@@ -175,9 +205,17 @@ export default function CourseCheckoutPage() {
 
           {/* Right Column - Payment Summary */}
           <div className="space-y-6">
+            <VoucherInput
+              onApplyDirect={handleVoucherApply}
+              onRemove={handleVoucherRemove}
+              appliedVoucher={appliedVoucher}
+              disabled={isProcessing}
+            />
+
             <PaymentSummary
               price={courseData.priceCents}
-              total={courseData.priceCents}
+              discount={discountAmount}
+              total={finalTotal}
             />
 
             <Button

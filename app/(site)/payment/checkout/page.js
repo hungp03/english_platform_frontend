@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { CourseInfo } from "@/components/payment/course-info"
 import { PaymentSummary } from "@/components/payment/payment-summary"
 import { PaymentMethods } from "@/components/payment/payment-methods"
+import { VoucherInput } from "@/components/payment/voucher-input"
 import { ShoppingCart, ArrowLeft, Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import { getCartCheckout } from "@/lib/api/cart"
@@ -18,6 +19,7 @@ export default function CheckoutPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [isProcessing, setIsProcessing] = useState(false)
+  const [appliedVoucher, setAppliedVoucher] = useState(null)
   const router = useRouter()
 
   const fetchCartData = useCallback(async () => {
@@ -49,6 +51,25 @@ export default function CheckoutPage() {
     [cartData]
   )
 
+  // Calculate discount and final total
+  const discountAmount = useMemo(() => {
+    if (!appliedVoucher?.totalDiscount) return 0
+    return Number(appliedVoucher.totalDiscount)
+  }, [appliedVoucher])
+
+  const finalTotal = useMemo(() => {
+    const total = totalAmount - discountAmount
+    return total > 0 ? total : 0
+  }, [totalAmount, discountAmount])
+
+  const handleVoucherApply = useCallback((voucherData) => {
+    setAppliedVoucher(voucherData)
+  }, [])
+
+  const handleVoucherRemove = useCallback(() => {
+    setAppliedVoucher(null)
+  }, [])
+
   const handlePayment = useCallback(async () => {
     if (cartData.length === 0 || isProcessing) return
 
@@ -60,10 +81,11 @@ export default function CheckoutPage() {
         orderSource: "CART",
         items: cartData.map((course) => ({
           entityType: "COURSE",
-          entityId: course.id,
+          entityId: course.courseId,
           quantity: 1,
           unitPriceCents: course.priceCents
-        }))
+        })),
+        voucherCode: appliedVoucher?.code || null
       }
 
       const orderResult = await createOrder(orderRequest)
@@ -119,7 +141,7 @@ export default function CheckoutPage() {
     } finally {
       setIsProcessing(false)
     }
-  }, [cartData, isProcessing, selectedPayment, router])
+  }, [cartData, isProcessing, selectedPayment, appliedVoucher, router])
 
   if (loading) {
     return (
@@ -182,9 +204,17 @@ export default function CheckoutPage() {
 
           {/* Right Column - Payment Summary */}
           <div className="space-y-6">
+            <VoucherInput
+              onApply={handleVoucherApply}
+              onRemove={handleVoucherRemove}
+              appliedVoucher={appliedVoucher}
+              disabled={isProcessing}
+            />
+
             <PaymentSummary
               price={totalAmount}
-              total={totalAmount}
+              discount={discountAmount}
+              total={finalTotal}
             />
 
             <Button

@@ -99,11 +99,13 @@ export default function AssessmentPolling({
             </Button>
           )}
           {quizId && (
-            <Button size="lg" variant="outline" asChild>
-              <Link href={`/practice/${quizId}`}>
-                <RotateCcw className="mr-2 h-4 w-4" />
-                Làm lại
-              </Link>
+            <Button 
+              size="lg" 
+              variant="outline"
+              onClick={() => window.location.href = `/practice/${quizId}`}
+            >
+              <RotateCcw className="mr-2 h-4 w-4" />
+              Làm lại
             </Button>
           )}
         </div>
