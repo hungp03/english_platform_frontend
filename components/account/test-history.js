@@ -339,8 +339,8 @@ export default function TestHistory() {
         <div className="flex justify-center pt-6">
           <Pagination
             totalPages={meta.pages}
-            currentPage={page - 1}
-            onPageChange={(p0) => setPage(p0 + 1)}
+            currentPage={page}
+            onPageChange={(p) => setPage(p)}
             siblingCount={1}
           />
         </div>
