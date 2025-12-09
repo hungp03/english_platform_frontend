@@ -16,7 +16,6 @@ export default function FCMProvider({ children }) {
       const fcmToken = await requestNotificationPermission();
       if (fcmToken) {
         await registerFcmToken(fcmToken);
-        console.log("FCM token registered:", fcmToken);
       }
     };
 
