@@ -80,9 +80,10 @@ export default function UserGrowthChart() {
             />
             <Line
               type="monotone"
-              dataKey="activeUsers"
+              // dataKey="activeUsers"
+              dataKey="totalUsers"
               stroke="#82ca9d"
-              name="Người dùng hoạt động"
+              name="Tổng người dùng"
             />
           </LineChart>
         </ResponsiveContainer>
