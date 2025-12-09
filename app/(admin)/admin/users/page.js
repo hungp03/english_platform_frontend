@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useMemo, useCallback, memo } from "react";
+import React, { useState, useEffect, useCallback, memo } from "react";
 import { Search, ArrowUpDown, Users, Filter, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -128,12 +128,14 @@ const UserManagement = () => {
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
+      const isActive = status === "all" ? null : status === "active";
       const { success, data } = await getUsers({
         page,
         size: PAGE_SIZE,
         searchTerm: debouncedSearch,
         sortBy,
         sortDir,
+        isActive,
       });
 
       if (success && data) {
@@ -146,17 +148,11 @@ const UserManagement = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, debouncedSearch, sortBy, sortDir]);
+  }, [page, debouncedSearch, sortBy, sortDir, status]);
 
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
-
-  const filteredUsers = useMemo(() => {
-    if (status === "all") return users;
-    const wantActive = status === "active";
-    return users.filter((u) => !!u.isActive === wantActive);
-  }, [users, status]);
 
   const handleToggle = useCallback((user) => setModalUser(user), []);
   const handleCloseModal = useCallback(() => setModalUser(null), []);
@@ -218,13 +214,13 @@ const UserManagement = () => {
         <CardContent>
           {loading ? (
             <LoadingSkeleton />
-          ) : filteredUsers.length === 0 ? (
+          ) : users.length === 0 ? (
             <EmptyState />
           ) : (
-            <UserList users={filteredUsers} onToggle={handleToggle} />
+            <UserList users={users} onToggle={handleToggle} />
           )}
 
-          {!loading && filteredUsers.length > 0 && totalPages > 1 && (
+          {!loading && users.length > 0 && totalPages > 1 && (
             <div className="mt-6 flex justify-center">
               <Pagination
                 currentPage={page}
