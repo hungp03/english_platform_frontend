@@ -149,7 +149,7 @@ export function CoursePurchase({ course, isEnrolled = false }) {
             </p>
           </div>
 
-          <Link href="/my-courses/learning">
+          <Link href={`/courses/${course.slug}/learn`}>
             <Button className="w-full" size="lg">
               Vào học ngay
             </Button>

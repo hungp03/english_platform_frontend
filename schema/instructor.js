@@ -3,10 +3,7 @@ import { z } from "zod"
 export const createInstructorRequestSchema = z.object({
   bio: z
     .string()
-    .min(1, "Bio là bắt buộc")
-    .min(10, "Bio phải có ít nhất 10 ký tự")
-    .max(5000, "Bio không được vượt quá 5000 ký tự") // Increased for HTML content
-    .transform(val => val?.trim() || ""),
+    .min(1, "Bio là bắt buộc"),
   expertise: z
     .string()
     .min(1, "Chuyên môn là bắt buộc")
@@ -94,3 +91,10 @@ export const instructorValidationMessages = {
     fileTypes: "Chỉ chấp các định dạng file: PNG, JPG, WebP, PDF",
   },
 }
+
+export const updateInstructorProfileSchema = z.object({
+  bio: z.string().min(1, "Giới thiệu bản thân là bắt buộc"),
+  expertise: z.string().min(1, "Chuyên môn là bắt buộc").max(255, "Chuyên môn không được vượt quá 255 ký tự"),
+  experienceYears: z.number().int().min(0, "Số năm kinh nghiệm phải >= 0").max(50, "Số năm kinh nghiệm không được vượt quá 50"),
+  qualification: z.string().min(1, "Bằng cấp là bắt buộc").max(255, "Bằng cấp không được vượt quá 255 ký tự"),
+})

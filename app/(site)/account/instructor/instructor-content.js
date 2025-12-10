@@ -293,14 +293,16 @@ const InstructorRequestsContent = () => {
                 <RequestCard key={request.id} request={request} onViewEvidence={handleViewEvidence} />
               ))}
 
-              <Card>
-                <CardContent className="p-6 text-center">
-                  <p className="text-gray-600 mb-4">Muốn gửi yêu cầu mới?</p>
-                  <Link href="/become-instructor">
-                    <Button variant="outline">Gửi yêu cầu mới</Button>
-                  </Link>
-                </CardContent>
-              </Card>
+              {!requests.some(r => r.status === "PENDING") && (
+                <Card>
+                  <CardContent className="p-6 text-center">
+                    <p className="text-gray-600 mb-4">Muốn gửi yêu cầu mới?</p>
+                    <Link href="/become-instructor">
+                      <Button variant="outline">Gửi yêu cầu mới</Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              )}
             </div>
           )}
         </div>

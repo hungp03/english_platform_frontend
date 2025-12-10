@@ -315,11 +315,13 @@ export default function LessonDetailPage() {
           return;
         }
 
-        const res = await getLessonDetail(moduleId, lessonId);
-        if (res.success) {
-          setLesson(res.data);
-          toast.success("Video đã được cập nhật cho bài học");
-        }
+        // Cập nhật lesson state với mediaId mới, không fetch lại
+        setLesson(prev => ({
+          ...prev,
+          primaryMediaId: mediaId
+        }));
+        
+        toast.success("Video đã được cập nhật cho bài học");
       } catch (err) {
         console.error("Error updating lesson with media:", err);
         toast.error("Đã xảy ra lỗi khi cập nhật bài học");

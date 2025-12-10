@@ -33,7 +33,7 @@ import { MoreVertical, UserMinus, UserCheck } from "lucide-react";
 import { removeInstructorRole, restoreInstructorRole } from "@/lib/api/instructor";
 import { toast } from "sonner";
 
-const InstructorListSection = ({ instructors, loading, currentPage, totalPages, onPageChange }) => {
+const InstructorListSection = ({ instructors, loading, currentPage, totalPages, onPageChange, onUpdate }) => {
   const [revokeDialogOpen, setRevokeDialogOpen] = useState(false);
   const [restoreDialogOpen, setRestoreDialogOpen] = useState(false);
   const [selectedInstructor, setSelectedInstructor] = useState(null);
@@ -85,18 +85,29 @@ const InstructorListSection = ({ instructors, loading, currentPage, totalPages, 
     }
 
     setIsRestoring(true);
+    
+    // Optimistic update
+    if (onUpdate) {
+      onUpdate(selectedInstructor.userId, { isActive: true });
+    }
+    
     try {
       const result = await restoreInstructorRole(selectedInstructor.userId, reason);
       if (result.success) {
         toast.success("Khôi phục quyền giảng viên thành công");
         setRestoreDialogOpen(false);
-        if (onPageChange) {
-          onPageChange(currentPage);
-        }
       } else {
+        // Rollback on error
+        if (onUpdate) {
+          onUpdate(selectedInstructor.userId, { isActive: false });
+        }
         toast.error(result.error || "Khôi phục quyền giảng viên thất bại");
       }
     } catch (error) {
+      // Rollback on error
+      if (onUpdate) {
+        onUpdate(selectedInstructor.userId, { isActive: false });
+      }
       console.error("Error restoring instructor role:", error);
       toast.error("Có lỗi xảy ra khi khôi phục quyền giảng viên");
     } finally {
@@ -115,19 +126,29 @@ const InstructorListSection = ({ instructors, loading, currentPage, totalPages, 
     }
 
     setIsRevoking(true);
+    
+    // Optimistic update
+    if (onUpdate) {
+      onUpdate(selectedInstructor.userId, { isActive: false });
+    }
+    
     try {
       const result = await removeInstructorRole(selectedInstructor.userId, reason);
       if (result.success) {
         toast.success("Thu hồi quyền giảng viên thành công");
         setRevokeDialogOpen(false);
-        // Refresh the list
-        if (onPageChange) {
-          onPageChange(currentPage);
-        }
       } else {
+        // Rollback on error
+        if (onUpdate) {
+          onUpdate(selectedInstructor.userId, { isActive: true });
+        }
         toast.error(result.error || "Thu hồi quyền giảng viên thất bại");
       }
     } catch (error) {
+      // Rollback on error
+      if (onUpdate) {
+        onUpdate(selectedInstructor.userId, { isActive: true });
+      }
       console.error("Error revoking instructor role:", error);
       toast.error("Có lỗi xảy ra khi thu hồi quyền giảng viên");
     } finally {

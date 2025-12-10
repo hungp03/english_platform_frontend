@@ -89,7 +89,7 @@ function CheckoutSuccessContent() {
                 className="flex-1"
                 size="lg"
               >
-                <Link href="/my-courses" className="flex items-center justify-center">
+                <Link href="/my-courses/learning" className="flex items-center justify-center">
                   <Package className="w-5 h-5 mr-2" />
                   Xem khóa học của tôi
                 </Link>
