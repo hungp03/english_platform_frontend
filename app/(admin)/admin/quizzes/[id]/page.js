@@ -417,7 +417,7 @@ export default function AdminQuizEditorPage() {
 
               <FormField
                 label="Section"
-                error={errors.quizSectionId?.message}
+                required error={errors.quizSectionId?.message}
                 icon={ListOrdered}
               >
                 <Controller
