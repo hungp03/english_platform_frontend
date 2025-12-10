@@ -4,7 +4,7 @@ import { z } from "zod"
  * Forum Thread Create Schema
  * Based on backend validation:
  * - title: required, 5-255 characters
- * - bodyMd: required, 10-50000 characters
+ * - bodyMd: required
  * - categoryIds: required, 1-5 categories
  */
 export const threadCreateSchema = z.object({
@@ -17,10 +17,7 @@ export const threadCreateSchema = z.object({
   
   bodyMd: z
     .string()
-    .min(1, "Nội dung không được để trống")
-    .min(10, "Nội dung phải có ít nhất 10 ký tự")
-    .max(50000, "Nội dung không được vượt quá 50,000 ký tự")
-    .transform(val => val?.trim() || ""),
+    .min(1, "Nội dung không được để trống"),
   
   categoryIds: z
     .array(z.string().uuid())
@@ -43,9 +40,7 @@ export const threadUpdateSchema = z.object({
   
   bodyMd: z
     .string()
-    .min(10, "Nội dung phải có ít nhất 10 ký tự")
-    .max(50000, "Nội dung không được vượt quá 50,000 ký tự")
-    .transform(val => val?.trim() || "")
+    .min(1, "Nội dung không được để trống")
     .optional(),
   
   categoryIds: z
@@ -58,15 +53,11 @@ export const threadUpdateSchema = z.object({
 /**
  * Forum Post (Reply) Create Schema
  * Used for replying to threads
- * Based on backend validation:
- * - bodyMd: required, 1-10000 characters
  */
 export const postCreateSchema = z.object({
   bodyMd: z
     .string()
     .min(1, "Nội dung không được để trống")
-    .max(10000, "Nội dung không được vượt quá 10,000 ký tự")
-    .transform(val => val?.trim() || "")
 })
 
 /**
@@ -77,8 +68,6 @@ export const postReplySchema = z.object({
   bodyMd: z
     .string()
     .min(1, "Nội dung không được để trống")
-    .max(10000, "Nội dung không được vượt quá 10,000 ký tự")
-    .transform(val => val?.trim() || "")
 })
 
 /**
@@ -107,8 +96,6 @@ export const forumValidationMessages = {
     },
     body: {
       required: "Nội dung không được để trống",
-      minLength: "Nội dung phải có ít nhất 10 ký tự",
-      maxLength: "Nội dung không được vượt quá 50,000 ký tự",
     },
     categories: {
       required: "Vui lòng chọn ít nhất 1 danh mục",
@@ -118,7 +105,6 @@ export const forumValidationMessages = {
   post: {
     body: {
       required: "Nội dung không được để trống",
-      maxLength: "Nội dung không được vượt quá 10,000 ký tự",
     },
   },
   report: {

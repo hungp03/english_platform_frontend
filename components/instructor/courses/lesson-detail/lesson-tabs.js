@@ -131,13 +131,13 @@ export default function LessonTabs({ lesson, onEditContent, onVideoUploaded }) {
         `Video đã được tải lên và ${uploadedMedia.meta?.status === "processing" ? "đang xử lý" : "sẵn sàng"}`
       )
 
-      // Clean up preview
-      handleRemoveVideoFile()
-
       // Notify parent component with media ID
       if (onVideoUploaded) {
         onVideoUploaded(uploadedMedia.id)
       }
+      
+      // Giữ video preview, không xóa
+      setSelectedVideoFile(null)
     } catch (err) {
       console.error("Error uploading video:", err)
       toast.error("Đã xảy ra lỗi khi tải video lên")

@@ -157,12 +157,13 @@ const UserManagement = () => {
   const handleToggle = useCallback((user) => setModalUser(user), []);
   const handleCloseModal = useCallback(() => setModalUser(null), []);
 
-  const handleConfirmToggle = useCallback(async () => {
+  const handleConfirmToggle = useCallback(async (reason) => {
     if (!modalUser) return;
     try {
-      const res = await toggleUserStatus(modalUser.id);
+      const res = await toggleUserStatus(modalUser.id, reason);
       if (res.success) {
         await fetchUsers();
+        toast.success(`Đã ${modalUser.isActive ? 'khóa' : 'mở khóa'} tài khoản thành công`);
       }
     } catch (error) {
       toast.error("Thay đổi trạng thái thất bại");

@@ -28,7 +28,7 @@ const rules = [
       "/payment",
       "/account",
       "/become-instructor",
-      "/my-courses",
+      "/my-courses/learning",
       "/practice",
       "/forum/new",
     ],

@@ -111,43 +111,39 @@ export const useCartStore = create()(
 
       // remove specific course from cart
       removeFromCart: async (courseId) => {
-        const s = get()
         const authStore = useAuthStore.getState()
-
-        // Check if user is logged in
         if (!authStore.isLoggedIn) {
           return { success: false, error: 'Vui lòng đăng nhập để xóa khỏi giỏ hàng' }
         }
 
-        if (s.isRemovingFromCart) return
+        // Save current state for rollback
+        const prevItems = get().items
+        const prevSummary = get().summary
 
-        set({ isRemovingFromCart: true })
+        // Optimistic update
+        const updatedItems = prevItems.filter(item => item.course.id !== courseId)
+        set({
+          items: updatedItems,
+          summary: {
+            ...prevSummary,
+            totalPublishedCourses: updatedItems.length,
+            totalPriceCents: updatedItems.reduce((total, item) => total + item.course.priceCents, 0)
+          }
+        })
+
         try {
           const result = await removeFromCart(courseId)
-          if (result.success) {
-            // Update local state optimistically
-            const currentItems = get().items
-            const updatedItems = currentItems.filter(item => item.course.id !== courseId)
-            const updatedSummary = {
-              ...get().summary,
-              totalPublishedCourses: updatedItems.length,
-              totalPriceCents: updatedItems.reduce((total, item) => total + item.course.priceCents, 0)
-            }
-            set({
-              items: updatedItems,
-              summary: updatedSummary
-            })
-
-            // Refresh cart to ensure consistency
-            await get().fetchCart(true)
-            return { success: true }
+          if (!result.success) {
+            // Rollback on failure
+            set({ items: prevItems, summary: prevSummary })
+            return { success: false, error: result.error }
           }
-          return { success: false, error: result.error }
+          return { success: true }
         } catch (err) {
+          // Rollback on error
+          set({ items: prevItems, summary: prevSummary })
           console.error('removeFromCart error:', err)
           return { success: false, error: 'Lỗi khi xóa khỏi giỏ hàng' }
-        } finally {
-          set({ isRemovingFromCart: false })
         }
       },
 

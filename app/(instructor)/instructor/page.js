@@ -6,7 +6,7 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getInstructorStats } from "@/lib/api/course";
+import { getInstructorStats } from "@/lib/api/instructor";
 import { toast } from "sonner";
 import { GrowthChart } from "@/components/instructor/dashboard/growth-chart";
 

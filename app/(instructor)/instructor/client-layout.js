@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BookOpen, Home, LayoutDashboard, Menu, Ticket, Wallet, X } from "lucide-react";
+import { BookOpen, Home, LayoutDashboard, Menu, Ticket, User, Wallet, X } from "lucide-react";
 
 const menuItems = [
   { title: "Trang Chủ", url: "/", icon: Home, end: true },
@@ -11,6 +11,7 @@ const menuItems = [
   { title: "Khóa Học", url: "/instructor/courses", icon: BookOpen },
   { title: "Voucher", url: "/instructor/vouchers", icon: Ticket },
   { title: "Ví", url: "/instructor/wallet", icon: Wallet },
+  { title: "Hồ sơ", url: "/instructor/profile", icon: User, end: true },
 ];
 
 export default function InstructorLayout({ children }) {

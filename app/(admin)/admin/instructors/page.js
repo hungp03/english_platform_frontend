@@ -148,6 +148,16 @@ const InstructorManagement = () => {
     setInstructorPage(newPage);
   }, []);
 
+  const handleInstructorUpdate = useCallback((userId, updates) => {
+    setInstructors(prev => 
+      prev.map(instructor => 
+        instructor.userId === userId 
+          ? { ...instructor, ...updates }
+          : instructor
+      )
+    );
+  }, []);
+
   const handlePageChange = useCallback((newPage) => {
     setPage(newPage);
   }, []);
@@ -233,6 +243,7 @@ const InstructorManagement = () => {
                 currentPage={instructorPage}
                 totalPages={instructorTotalPages}
                 onPageChange={handleInstructorPageChange}
+                onUpdate={handleInstructorUpdate}
               />
             </CardContent>
           </Card>
