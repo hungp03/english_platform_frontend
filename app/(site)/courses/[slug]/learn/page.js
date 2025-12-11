@@ -169,7 +169,7 @@ export default function LessonPage() {
         <div
           className={`
             fixed lg:static inset-y-0 right-0 z-50
-            w-80 lg:w-1/4 
+            w-80 lg:w-1/4 h-full
             border-l bg-background
             transform transition-transform duration-300 ease-in-out
             ${sidebarOpen ? "translate-x-0" : "translate-x-full lg:translate-x-0"}
