@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
-import { Video, FileText, Upload, X, Loader2 } from "lucide-react"
+import { Video, FileText, Upload, X, Loader2, Paperclip } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -9,8 +9,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { uploadCourseVideo, getSignedVideoUrl } from "@/lib/api/course"
 import { toast } from "sonner"
+import LessonAttachments from "./lesson-attachments"
 
-export default function LessonTabs({ lesson, onEditContent, onVideoUploaded }) {
+export default function LessonTabs({ lesson, onEditContent, onVideoUploaded, moduleId, onLessonUpdated }) {
   const [selectedVideoFile, setSelectedVideoFile] = useState(null)
   const [videoPreviewUrl, setVideoPreviewUrl] = useState(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -146,6 +147,8 @@ export default function LessonTabs({ lesson, onEditContent, onVideoUploaded }) {
     }
   }
 
+  const attachmentCount = lesson.mediaAssets?.filter(asset => asset.role === 'ATTACHMENT')?.length || 0
+
   return (
     <Tabs
       defaultValue={kind === "quiz" ? "quiz" : "content"}
@@ -157,12 +160,16 @@ export default function LessonTabs({ lesson, onEditContent, onVideoUploaded }) {
         }
       }}
     >
-      <TabsList className="grid w-full grid-cols-2">
+      <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger value="content" disabled={kind === "quiz"} className="gap-2">
           <FileText className="h-4 w-4" /> Nội dung
         </TabsTrigger>
         <TabsTrigger value="video" disabled={kind !== "video"} className="gap-2">
           <Video className="h-4 w-4" /> Video
+        </TabsTrigger>
+        <TabsTrigger value="attachments" className="gap-2">
+          <Paperclip className="h-4 w-4" /> 
+          Tài liệu ({attachmentCount})
         </TabsTrigger>
       </TabsList>
 
@@ -321,6 +328,15 @@ export default function LessonTabs({ lesson, onEditContent, onVideoUploaded }) {
           </div>
         </TabsContent>
       )}
+
+      {/* ATTACHMENTS */}
+      <TabsContent value="attachments" className="mt-6">
+        <LessonAttachments 
+          lesson={lesson}
+          moduleId={moduleId}
+          onLessonUpdated={onLessonUpdated}
+        />
+      </TabsContent>
     </Tabs>
   )
 }

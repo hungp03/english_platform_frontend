@@ -1,10 +1,26 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
-import { Loader2 } from "lucide-react"
+import { Loader2, FileText, Image, Music, Video, ExternalLink } from "lucide-react"
 import { getSignedVideoUrl } from "@/lib/api/course"
 import { toast } from "sonner"
 import LessonNavigation from "./lesson-navigation"
+import { Badge } from "@/components/ui/badge"
+
+const getFileIcon = (mimeType) => {
+  if (mimeType?.startsWith('image/')) return Image
+  if (mimeType?.startsWith('video/')) return Video
+  if (mimeType?.startsWith('audio/')) return Music
+  return FileText
+}
+
+const formatFileSize = (bytes) => {
+  if (!bytes) return ''
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
 
 export default function VideoLesson({
   lesson,
@@ -105,6 +121,7 @@ export default function VideoLesson({
 
   const content = lesson.content || {}
   const body = content.body || {}
+  const attachments = lesson.mediaAssets?.filter(a => a.role === 'ATTACHMENT') || []
 
   return (
     <div className="space-y-4">
@@ -179,6 +196,50 @@ export default function VideoLesson({
                 )}
               </div>
             ))}
+          </div>
+        )}
+
+        {/* Attachments */}
+        {attachments.length > 0 && (
+          <div className="mt-6 p-4 border rounded-lg">
+            <h3 className="font-semibold mb-3 flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Tài liệu đính kèm ({attachments.length})
+            </h3>
+            <div className="space-y-2">
+              {attachments.map((attachment) => {
+                const FileIcon = getFileIcon(attachment.mimeType)
+                return (
+                  <a
+                    key={attachment.id}
+                    href={attachment.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors"
+                  >
+                    <div className="flex h-8 w-8 items-center justify-center rounded bg-primary/10 flex-shrink-0">
+                      <FileIcon className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">
+                        {attachment.title || attachment.meta?.originalName || 'Tài liệu'}
+                      </p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <Badge variant="outline" className="text-xs">
+                          {attachment.mimeType?.split('/')[1]?.toUpperCase() || 'FILE'}
+                        </Badge>
+                        {attachment.meta?.size && (
+                          <span className="text-xs text-muted-foreground">
+                            {formatFileSize(attachment.meta.size)}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    <ExternalLink className="h-4 w-4 text-muted-foreground" />
+                  </a>
+                )
+              })}
+            </div>
           </div>
         )}
       </div>
