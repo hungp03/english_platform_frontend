@@ -1,10 +1,11 @@
 "use client"
 
-import { memo, useCallback } from "react"
+import { memo, useCallback, useState, useEffect } from "react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, Filter, ArrowUpDown, Sparkles } from "lucide-react"
+import { getAllSkills } from "@/lib/api/skill"
 
 const CourseFilters = memo(function CourseFilters({
   searchInput,
@@ -15,8 +16,26 @@ const CourseFilters = memo(function CourseFilters({
   onSkillsFilterChange,
   sortBy,
   onSortChange,
-  onSearch
+  onSearch,
+  skills,
+  onSkillsChange
 }) {
+  useEffect(() => {
+    if (skills.length === 0) {
+      const fetchSkills = async () => {
+        try {
+          const res = await getAllSkills()
+          if (res.success && res.data) {
+            onSkillsChange(res.data)
+          }
+        } catch (err) {
+          console.error("Failed to fetch skills:", err)
+        }
+      }
+      fetchSkills()
+    }
+  }, [skills.length, onSkillsChange])
+
   const handleInputChange = useCallback((e) => {
     onSearchInputChange(e.target.value)
   }, [onSearchInputChange])
@@ -59,13 +78,11 @@ const CourseFilters = memo(function CourseFilters({
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="ALL">Tất cả kỹ năng</SelectItem>
-          <SelectItem value="listening">Listening</SelectItem>
-          <SelectItem value="reading">Reading</SelectItem>
-          <SelectItem value="speaking">Speaking</SelectItem>
-          <SelectItem value="writing">Writing</SelectItem>
-          <SelectItem value="grammar">Grammar</SelectItem>
-          <SelectItem value="vocabulary">Vocabulary</SelectItem>
-          <SelectItem value="pronunciation">Pronunciation</SelectItem>
+          {skills.map((skill) => (
+            <SelectItem key={skill.id} value={skill.name}>
+              {skill.name}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
 

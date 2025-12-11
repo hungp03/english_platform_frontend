@@ -44,9 +44,6 @@ export default function CreateCoursePage() {
   const router = useRouter()
 
   const [selectedSkills, setSelectedSkills] = useState([])
-  const [customSkills, setCustomSkills] = useState([])
-  const [customInput, setCustomInput] = useState("")
-  const customInputRef = useRef(null)
 
   const [thumbnailFile, setThumbnailFile] = useState(null)
   const [thumbnailPreview, setThumbnailPreview] = useState("")
@@ -68,59 +65,20 @@ export default function CreateCoursePage() {
     },
   })
 
-  const { register, handleSubmit, setValue, formState, setError, clearErrors } = form
+  const { register, handleSubmit, setValue, watch, formState, setError, clearErrors } = form
   const { errors, isSubmitting } = formState
-
-  const allSkills = useMemo(() => [...selectedSkills, ...customSkills], [selectedSkills, customSkills])
-
-  const toKey = useCallback((s) => s.toLocaleLowerCase(), [])
-  const selectedLower = useMemo(() => selectedSkills.map(toKey), [selectedSkills, toKey])
-  const customLower = useMemo(() => customSkills.map(toKey), [customSkills, toKey])
-  const allLower = useMemo(() => allSkills.map(toKey), [allSkills, toKey])
-
-  const existsInSelected = useCallback((name) => selectedLower.includes(toKey(name)), [selectedLower, toKey])
-  const existsInCustom = useCallback((name) => customLower.includes(toKey(name)), [customLower, toKey])
-  const existsInAll = useCallback((name) => existsInSelected(name) || existsInCustom(name), [existsInSelected, existsInCustom])
+  const languageValue = watch("language")
 
   const toggleSkill = useCallback((skill) => {
-    if (existsInCustom(skill)) {
-      toast.error(`"${skill}" đã tồn tại trong danh sách kỹ năng tự nhập`)
-      return
-    }
     setSelectedSkills((prev) =>
       prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
     )
     clearErrors("skillFocus")
-  }, [existsInCustom, clearErrors])
-
-  const addCustomSkill = useCallback(() => {
-    const raw = customInput.trim()
-    if (!raw) return
-    if (existsInAll(raw)) {
-      toast.error(`Kỹ năng "${raw}" đã tồn tại`)
-      return
-    }
-    setCustomSkills((prev) => [...prev, raw])
-    setCustomInput("")
-    customInputRef.current?.focus()
-    clearErrors("skillFocus")
-  }, [customInput, existsInAll, clearErrors])
-
-  const handleCustomKeyDown = useCallback((e) => {
-    if (e.key === "Enter") {
-      e.preventDefault()
-      addCustomSkill()
-    }
-  }, [addCustomSkill])
+  }, [clearErrors])
 
   const removeSkill = useCallback((skill) => {
-    const key = toKey(skill)
-    if (customLower.includes(key)) {
-      setCustomSkills((prev) => prev.filter((s) => toKey(s) !== key))
-    } else if (selectedLower.includes(key)) {
-      setSelectedSkills((prev) => prev.filter((s) => toKey(s) !== key))
-    }
-  }, [toKey, customLower, selectedLower])
+    setSelectedSkills((prev) => prev.filter((s) => s !== skill))
+  }, [])
 
   const handleFileSelect = useCallback((e) => {
     const file = e.target.files?.[0]
@@ -178,9 +136,9 @@ export default function CreateCoursePage() {
   }, [thumbnailFile, setValue])
 
   useEffect(() => {
-    setValue("skillFocus", allSkills, { shouldValidate: false })
-    if (allSkills.length > 0) clearErrors("skillFocus")
-  }, [allSkills, setValue, clearErrors])
+    setValue("skillFocus", selectedSkills, { shouldValidate: false })
+    if (selectedSkills.length > 0) clearErrors("skillFocus")
+  }, [selectedSkills, setValue, clearErrors])
 
   useEffect(() => {
     setValue("detailedDescription", detailedDescription, { shouldValidate: false })
@@ -188,16 +146,9 @@ export default function CreateCoursePage() {
 
   const onSubmit = async (data) => {
     try {
-      if (allSkills.length === 0) {
-        setError("skillFocus", { type: "manual", message: "Vui lòng chọn hoặc nhập ít nhất 1 kỹ năng" })
+      if (selectedSkills.length === 0) {
+        setError("skillFocus", { type: "manual", message: "Vui lòng chọn ít nhất 1 kỹ năng" })
         toast.error("Cần ít nhất 1 kỹ năng")
-        return
-      }
-
-      const uniqueCount = new Set(allLower).size
-      if (uniqueCount !== allSkills.length) {
-        setError("skillFocus", { type: "manual", message: "Danh sách kỹ năng đang bị trùng" })
-        toast.error("Danh sách kỹ năng đang bị trùng")
         return
       }
 
@@ -216,7 +167,7 @@ export default function CreateCoursePage() {
         ...data,
         thumbnail: thumbnailUrl,
         detailedDescription: detailedDescription || null,
-        skillFocus: allSkills,
+        skillFocus: selectedSkills,
         priceCents: Number(data.priceCents || 0),
         currency: (data.currency || "VND").toUpperCase(),
       }
@@ -254,6 +205,8 @@ export default function CreateCoursePage() {
                 errors={errors}
                 detailedDescription={detailedDescription}
                 setDetailedDescription={setDetailedDescription}
+                languageValue={languageValue}
+                onLanguageChange={(value) => setValue("language", value)}
               />
             </CardContent>
           </Card>
@@ -285,15 +238,8 @@ export default function CreateCoursePage() {
             <CardContent>
               <SkillFocusSection
                 selectedSkills={selectedSkills}
-                customSkills={customSkills}
-                customInput={customInput}
-                customInputRef={customInputRef}
-                setCustomInput={setCustomInput}
                 toggleSkill={toggleSkill}
-                addCustomSkill={addCustomSkill}
-                handleCustomKeyDown={handleCustomKeyDown}
                 removeSkill={removeSkill}
-                toKey={toKey}
                 register={register}
                 errors={errors}
               />

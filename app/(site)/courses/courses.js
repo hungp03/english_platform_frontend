@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useCallback } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Pagination } from "@/components/ui/pagination"
 import { getPublishedCourses } from "@/lib/api/course"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -13,17 +14,32 @@ import {
 } from "@/components/courses"
 
 export default function Courses() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  
   const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(true)
-  const [selectedSkills, setSelectedSkills] = useState([])
-  const [searchKeyword, setSearchKeyword] = useState("")
-  const [sortBy, setSortBy] = useState("createdAt,desc")
+  const [selectedSkills, setSelectedSkills] = useState(() => {
+    const skills = searchParams.get("skills")
+    return skills ? skills.split(",") : []
+  })
+  const [searchKeyword, setSearchKeyword] = useState(() => searchParams.get("keyword") || "")
+  const [sortBy, setSortBy] = useState(() => searchParams.get("sort") || "createdAt,desc")
   const [pagination, setPagination] = useState({
-    page: 1,
+    page: parseInt(searchParams.get("page")) || 1,
     pageSize: 12,
     pages: 0,
     total: 0,
   })
+
+  const updateURL = useCallback((params) => {
+    const url = new URLSearchParams()
+    if (params.page > 1) url.set("page", params.page)
+    if (params.skills?.length) url.set("skills", params.skills.join(","))
+    if (params.keyword) url.set("keyword", params.keyword)
+    if (params.sort !== "createdAt,desc") url.set("sort", params.sort)
+    router.push(`/courses${url.toString() ? `?${url.toString()}` : ""}`, { scroll: false })
+  }, [router])
 
   const fetchCourses = useCallback(async () => {
     setLoading(true)
@@ -35,6 +51,8 @@ export default function Courses() {
     
     if (selectedSkills.length > 0) params.skills = selectedSkills
     if (searchKeyword) params.keyword = searchKeyword
+
+    updateURL({ page: pagination.page, skills: selectedSkills, keyword: searchKeyword, sort: sortBy })
 
     const result = await getPublishedCourses(params)
 
@@ -48,7 +66,7 @@ export default function Courses() {
       })
     }
     setLoading(false)
-  }, [pagination.page, sortBy, selectedSkills, searchKeyword])
+  }, [pagination.page, sortBy, selectedSkills, searchKeyword, updateURL])
 
   useEffect(() => {
     fetchCourses()
@@ -88,6 +106,7 @@ export default function Courses() {
         <CoursesHeader />
 
         <CourseSearchFilters
+          searchKeyword={searchKeyword}
           onSearch={handleSearch}
           sortBy={sortBy}
           onSortChange={handleSortChange}

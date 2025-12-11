@@ -13,8 +13,8 @@ export default function PricingSection({ register, errors }) {
       </div>
       <div className="w-32">
         <Label htmlFor="currency" className="mb-2">Tiền tệ</Label>
-        <Input id="currency" {...register("currency")} />
-        {errors.currency && <p className="text-red-500 text-sm mt-1">{errors.currency.message}</p>}
+        <Input id="currency" value="VND" readOnly className="bg-muted" />
+        <input type="hidden" {...register("currency")} value="VND" />
       </div>
     </div>
   )

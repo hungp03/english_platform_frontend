@@ -3,6 +3,7 @@
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Editor from "@/components/common/editor"
 
 export default function BasicInfoSection({
@@ -10,6 +11,8 @@ export default function BasicInfoSection({
   errors,
   detailedDescription,
   setDetailedDescription,
+  languageValue,
+  onLanguageChange,
 }) {
   return (
     <>
@@ -42,7 +45,16 @@ export default function BasicInfoSection({
       {/* Language */}
       <div>
         <Label htmlFor="language" className="mb-2">Ngôn ngữ *</Label>
-        <Input id="language" placeholder="VD: en, vi" {...register("language")} />
+        <Select value={languageValue} onValueChange={onLanguageChange}>
+          <SelectTrigger>
+            <SelectValue placeholder="Chọn ngôn ngữ" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="en">English</SelectItem>
+            <SelectItem value="vi">Tiếng Việt</SelectItem>
+          </SelectContent>
+        </Select>
+        <input type="hidden" {...register("language")} />
         {errors.language && <p className="text-red-500 text-sm mt-1">{errors.language.message}</p>}
       </div>
     </>
