@@ -13,6 +13,7 @@ const PAGE_SIZE = 10
 export default function AdminCoursesPage() {
   const [courses, setCourses] = useState([])
   const [loading, setLoading] = useState(true)
+  const [skills, setSkills] = useState([])
   const [pagination, setPagination] = useState({
     page: 1,
     pageSize: PAGE_SIZE,
@@ -126,7 +127,7 @@ export default function AdminCoursesPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <CoursesHeader />
+      <CoursesHeader skills={skills} onSkillsChange={setSkills} />
 
       <CourseFilters
         searchInput={searchInput}
@@ -138,6 +139,8 @@ export default function AdminCoursesPage() {
         sortBy={filters.sort}
         onSortChange={handleSortChange}
         onSearch={handleSearch}
+        skills={skills}
+        onSkillsChange={setSkills}
       />
 
       <CourseTable

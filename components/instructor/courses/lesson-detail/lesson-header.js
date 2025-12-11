@@ -6,7 +6,7 @@ import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { MoreVertical, Edit, Trash2, CheckCircle, XCircle } from "lucide-react"
+import { MoreVertical, Edit, Trash2, CheckCircle, XCircle, Paperclip } from "lucide-react"
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -52,6 +52,7 @@ export default function LessonHeader({ lesson }) {
   const params = useParams()
   const { courseId, moduleId, lessonId } = params
   const kindLabel = getKindLabel(lesson.kind)
+  const attachmentCount = lesson.mediaAssets?.filter(asset => asset.role === 'ATTACHMENT')?.length || 0
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -154,6 +155,15 @@ export default function LessonHeader({ lesson }) {
                   <>
                     <span>•</span>
                     <span>{lesson.estimatedMin} phút</span>
+                  </>
+                )}
+                {attachmentCount > 0 && (
+                  <>
+                    <span>•</span>
+                    <div className="flex items-center gap-1">
+                      <Paperclip className="h-3 w-3" />
+                      <span>{attachmentCount} tài liệu</span>
+                    </div>
                   </>
                 )}
               </div>

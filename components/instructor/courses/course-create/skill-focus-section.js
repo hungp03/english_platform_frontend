@@ -1,27 +1,54 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { X } from "lucide-react"
-
-const SKILL_OPTIONS = ["Listening", "Reading", "Writing", "Speaking", "Grammar", "Vocabulary"]
+import { getAllSkills } from "@/lib/api/skill"
+import { toast } from "sonner"
 
 export default function SkillFocusSection({
   selectedSkills,
-  customSkills,
-  customInput,
-  customInputRef,
-  setCustomInput,
   toggleSkill,
-  addCustomSkill,
-  handleCustomKeyDown,
   removeSkill,
-  toKey,
   register,
   errors,
 }) {
-  const allSkills = [...selectedSkills, ...customSkills]
+  const [availableSkills, setAvailableSkills] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchSkills = async () => {
+      try {
+        const res = await getAllSkills()
+        if (res.success && res.data) {
+          setAvailableSkills(res.data)
+        } else {
+          toast.error("Không thể tải danh sách kỹ năng")
+        }
+      } catch (err) {
+        console.error(err)
+        toast.error("Lỗi khi tải danh sách kỹ năng")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchSkills()
+  }, [])
+
+  if (loading) {
+    return (
+      <div>
+        <Label>Kỹ năng trọng tâm</Label>
+        <div className="flex flex-wrap gap-2 mt-2">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="px-3 py-1 rounded-full border bg-muted animate-pulse h-8 w-20" />
+          ))}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -29,55 +56,40 @@ export default function SkillFocusSection({
 
       {/* Chọn từ danh sách có sẵn */}
       <div className="flex flex-wrap gap-2 mt-2">
-        {SKILL_OPTIONS.map((skill) => {
-          const isSelected = selectedSkills.includes(skill)
+        {availableSkills.map((skill) => {
+          const isSelected = selectedSkills.includes(skill.name)
           return (
             <button
-              key={skill}
+              key={skill.id}
               type="button"
-              onClick={() => toggleSkill(skill)}
+              onClick={() => toggleSkill(skill.name)}
               className={`px-3 py-1 rounded-full border text-sm transition-colors ${
                 isSelected
                   ? "bg-primary text-white border-primary"
                   : "bg-background border-muted hover:bg-muted"
               }`}
               aria-pressed={isSelected}
-              aria-label={`Toggle ${skill}`}
+              aria-label={`Toggle ${skill.name}`}
             >
-              {skill}
+              {skill.name}
             </button>
           )
         })}
       </div>
 
-      {/* Ô thêm custom skill */}
-      <div className="flex gap-2 mt-3">
-        <Input
-          ref={customInputRef}
-          value={customInput}
-          onChange={(e) => setCustomInput(e.target.value)}
-          onKeyDown={handleCustomKeyDown}
-          placeholder="Thêm kỹ năng khác..."
-          aria-label="Thêm kỹ năng khác"
-        />
-        <Button type="button" variant="secondary" onClick={addCustomSkill}>
-          Thêm
-        </Button>
-      </div>
-
-      {/* Hiển thị tất cả skill đã chọn/nhập */}
-      {allSkills.length > 0 && (
+      {/* Hiển thị skill đã chọn */}
+      {selectedSkills.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-3">
-          {allSkills.map((skill) => (
+          {selectedSkills.map((skillName) => (
             <span
-              key={`${skill}-${toKey(skill)}`}
+              key={skillName}
               className="flex items-center bg-primary/10 text-primary px-2 py-1 rounded-full text-xs"
             >
-              {skill}
+              {skillName}
               <X
                 className="ml-1 w-3 h-3 cursor-pointer hover:text-red-500"
-                onClick={() => removeSkill(skill)}
-                aria-label={`Remove ${skill}`}
+                onClick={() => removeSkill(skillName)}
+                aria-label={`Remove ${skillName}`}
               />
             </span>
           ))}

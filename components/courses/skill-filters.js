@@ -1,15 +1,24 @@
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-
-const SKILL_OPTIONS = [
-  "Listening",
-  "Speaking",
-  "Reading",
-  "Writing",
-  "Grammar",
-  "Vocabulary",
-]
+import { getAllSkills } from "@/lib/api/skill"
 
 export function SkillFilters({ selectedSkills, onSkillToggle, onClearAll }) {
+  const [skills, setSkills] = useState([])
+
+  useEffect(() => {
+    const fetchSkills = async () => {
+      try {
+        const res = await getAllSkills()
+        if (res.success && res.data) {
+          setSkills(res.data)
+        }
+      } catch (err) {
+        console.error("Failed to fetch skills:", err)
+      }
+    }
+    fetchSkills()
+  }, [])
+
   return (
     <div className="flex flex-wrap gap-2 mb-8">
       <Button
@@ -19,14 +28,14 @@ export function SkillFilters({ selectedSkills, onSkillToggle, onClearAll }) {
       >
         Tất cả
       </Button>
-      {SKILL_OPTIONS.map((skill) => (
+      {skills.map((skill) => (
         <Button
-          key={skill}
-          variant={selectedSkills.includes(skill) ? "default" : "outline"}
+          key={skill.id}
+          variant={selectedSkills.includes(skill.name) ? "default" : "outline"}
           size="sm"
-          onClick={() => onSkillToggle(skill)}
+          onClick={() => onSkillToggle(skill.name)}
         >
-          {skill}
+          {skill.name}
         </Button>
       ))}
     </div>

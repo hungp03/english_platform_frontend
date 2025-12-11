@@ -18,8 +18,6 @@ import ThumbnailUploadSection from "@/components/instructor/courses/course-creat
 import SkillFocusSection from "@/components/instructor/courses/course-create/skill-focus-section"
 import PricingSection from "@/components/instructor/courses/course-create/pricing-section"
 
-const SKILL_OPTIONS = ["Listening", "Reading", "Writing", "Speaking", "Grammar", "Vocabulary"]
-
 function PageHeader({ courseId }) {
   return (
     <div className="flex items-center gap-4">
@@ -103,9 +101,6 @@ export default function EditCoursePage() {
   const [course, setCourse] = useState(null)
 
   const [selectedSkills, setSelectedSkills] = useState([])
-  const [customSkills, setCustomSkills] = useState([])
-  const [customInput, setCustomInput] = useState("")
-  const customInputRef = useRef(null)
 
   const [thumbnailFile, setThumbnailFile] = useState(null)
   const [thumbnailPreview, setThumbnailPreview] = useState("")
@@ -127,8 +122,9 @@ export default function EditCoursePage() {
     },
   })
 
-  const { register, handleSubmit, setValue, reset, formState, setError: setFormError, clearErrors } = form
+  const { register, handleSubmit, setValue, reset, watch, formState, setError: setFormError, clearErrors } = form
   const { errors, isSubmitting } = formState
+  const languageValue = watch("language")
 
   const fetchCourse = useCallback(async () => {
     if (!courseId) return
@@ -164,14 +160,8 @@ export default function EditCoursePage() {
           setThumbnailPreview(courseData.thumbnail)
         }
 
-        const initial = Array.isArray(courseData.skillFocus) ? courseData.skillFocus : []
-        const lowerSet = new Set(initial.map((s) => s.trim().toLocaleLowerCase()))
-        const preset = SKILL_OPTIONS.filter((s) => lowerSet.has(s.toLocaleLowerCase()))
-        const custom = initial.filter(
-          (s) => !SKILL_OPTIONS.map((x) => x.toLocaleLowerCase()).includes(s.trim().toLocaleLowerCase())
-        )
-        setSelectedSkills(preset)
-        setCustomSkills(custom)
+        const initialSkills = Array.isArray(courseData.skillFocus) ? courseData.skillFocus : []
+        setSelectedSkills(initialSkills)
       } else {
         setError(true)
         toast.error(res.error || "Không thể tải thông tin khóa học")
@@ -189,56 +179,16 @@ export default function EditCoursePage() {
     fetchCourse()
   }, [fetchCourse])
 
-  const allSkills = useMemo(() => [...selectedSkills, ...customSkills], [selectedSkills, customSkills])
-
-  const toKey = useCallback((s) => s.toLocaleLowerCase(), [])
-  const selectedLower = useMemo(() => selectedSkills.map(toKey), [selectedSkills, toKey])
-  const customLower = useMemo(() => customSkills.map(toKey), [customSkills, toKey])
-  const allLower = useMemo(() => allSkills.map(toKey), [allSkills, toKey])
-
-  const existsInSelected = useCallback((name) => selectedLower.includes(toKey(name)), [selectedLower, toKey])
-  const existsInCustom = useCallback((name) => customLower.includes(toKey(name)), [customLower, toKey])
-  const existsInAll = useCallback((name) => existsInSelected(name) || existsInCustom(name), [existsInSelected, existsInCustom])
-
   const toggleSkill = useCallback((skill) => {
-    if (existsInCustom(skill)) {
-      toast.error(`"${skill}" đã tồn tại trong danh sách kỹ năng tự nhập`)
-      return
-    }
     setSelectedSkills((prev) =>
       prev.includes(skill) ? prev.filter((s) => s !== skill) : [...prev, skill]
     )
     clearErrors("skillFocus")
-  }, [existsInCustom, clearErrors])
-
-  const addCustomSkill = useCallback(() => {
-    const raw = customInput.trim()
-    if (!raw) return
-    if (existsInAll(raw)) {
-      toast.error(`Kỹ năng "${raw}" đã tồn tại`)
-      return
-    }
-    setCustomSkills((prev) => [...prev, raw])
-    setCustomInput("")
-    customInputRef.current?.focus()
-    clearErrors("skillFocus")
-  }, [customInput, existsInAll, clearErrors])
-
-  const handleCustomKeyDown = useCallback((e) => {
-    if (e.key === "Enter") {
-      e.preventDefault()
-      addCustomSkill()
-    }
-  }, [addCustomSkill])
+  }, [clearErrors])
 
   const removeSkill = useCallback((skill) => {
-    const key = toKey(skill)
-    if (customLower.includes(key)) {
-      setCustomSkills((prev) => prev.filter((s) => toKey(s) !== key))
-    } else if (selectedLower.includes(key)) {
-      setSelectedSkills((prev) => prev.filter((s) => toKey(s) !== key))
-    }
-  }, [toKey, customLower, selectedLower])
+    setSelectedSkills((prev) => prev.filter((s) => s !== skill))
+  }, [])
 
   const handleFileSelect = useCallback((e) => {
     const file = e.target.files?.[0]
@@ -296,9 +246,9 @@ export default function EditCoursePage() {
   }, [thumbnailFile, setValue])
 
   useEffect(() => {
-    setValue("skillFocus", allSkills, { shouldValidate: false })
-    if (allSkills.length > 0) clearErrors("skillFocus")
-  }, [allSkills, setValue, clearErrors])
+    setValue("skillFocus", selectedSkills, { shouldValidate: false })
+    if (selectedSkills.length > 0) clearErrors("skillFocus")
+  }, [selectedSkills, setValue, clearErrors])
 
   useEffect(() => {
     setValue("detailedDescription", detailedDescription, { shouldValidate: false })
@@ -306,16 +256,9 @@ export default function EditCoursePage() {
 
   const onSubmit = async (data) => {
     try {
-      if (allSkills.length === 0) {
-        setFormError("skillFocus", { type: "manual", message: "Vui lòng chọn hoặc nhập ít nhất 1 kỹ năng" })
+      if (selectedSkills.length === 0) {
+        setFormError("skillFocus", { type: "manual", message: "Vui lòng chọn ít nhất 1 kỹ năng" })
         toast.error("Cần ít nhất 1 kỹ năng")
-        return
-      }
-
-      const uniqueCount = new Set(allLower).size
-      if (uniqueCount !== allSkills.length) {
-        setFormError("skillFocus", { type: "manual", message: "Danh sách kỹ năng đang bị trùng" })
-        toast.error("Danh sách kỹ năng đang bị trùng")
         return
       }
 
@@ -334,7 +277,7 @@ export default function EditCoursePage() {
         ...data,
         thumbnail: thumbnailUrl,
         detailedDescription: detailedDescription || null,
-        skillFocus: allSkills,
+        skillFocus: selectedSkills,
         priceCents: Number(data.priceCents || 0),
         currency: (data.currency || "VND").toUpperCase(),
       }
@@ -387,6 +330,8 @@ export default function EditCoursePage() {
                 errors={errors}
                 detailedDescription={detailedDescription}
                 setDetailedDescription={setDetailedDescription}
+                languageValue={languageValue}
+                onLanguageChange={(value) => setValue("language", value)}
               />
             </CardContent>
           </Card>
@@ -418,15 +363,8 @@ export default function EditCoursePage() {
             <CardContent>
               <SkillFocusSection
                 selectedSkills={selectedSkills}
-                customSkills={customSkills}
-                customInput={customInput}
-                customInputRef={customInputRef}
-                setCustomInput={setCustomInput}
                 toggleSkill={toggleSkill}
-                addCustomSkill={addCustomSkill}
-                handleCustomKeyDown={handleCustomKeyDown}
                 removeSkill={removeSkill}
-                toKey={toKey}
                 register={register}
                 errors={errors}
               />

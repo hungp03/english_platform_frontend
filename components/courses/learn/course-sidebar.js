@@ -35,7 +35,7 @@ export default function CourseSidebar({
         )}
       </div>
 
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 overflow-auto">
         <div className="p-4 space-y-2">
           {modules.map((module, moduleIndex) => {
             const isExpanded = expandedModules.has(module.id)

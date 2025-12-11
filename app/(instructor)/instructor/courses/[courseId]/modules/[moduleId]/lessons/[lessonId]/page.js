@@ -368,6 +368,8 @@ export default function LessonDetailPage() {
               lesson={lesson}
               onEditContent={handleOpenEditContent}
               onVideoUploaded={handleVideoUploaded}
+              moduleId={moduleId}
+              onLessonUpdated={setLesson}
             />
           </CardContent>
         </Card>
