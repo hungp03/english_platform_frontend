@@ -1,7 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { Star } from "lucide-react"
-import { Play, Clock, BookOpen } from "lucide-react"
+import { Play, Clock, BookOpen, Users } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -83,7 +83,7 @@ export function CourseCard({ course }) {
 
           {/* Info + Price + Button */}
           <div className="space-y-3">
-            <div className="flex items-center justify-between text-sm">
+            <div className="grid grid-cols-3 gap-2 text-sm">
               <div className="flex items-center gap-1">
                 <BookOpen className="w-4 h-4" />
                 <span>{course.moduleCount || 0} chương</span>
@@ -91,6 +91,10 @@ export function CourseCard({ course }) {
               <div className="flex items-center gap-1">
                 <Clock className="w-4 h-4" />
                 <span>{course.lessonCount || 0} bài học</span>
+              </div>
+              <div className="flex items-center gap-1">
+                <Users className="w-4 h-4" />
+                <span>{course.studentCount || 0} học viên</span>
               </div>
             </div>
 

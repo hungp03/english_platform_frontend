@@ -87,8 +87,7 @@ export default function CourseCheckoutPage() {
         orderSource: "DIRECT",
         items: [
           {
-            entityType: "COURSE",
-            entityId: courseId
+            courseId: courseId
           }
         ],
         voucherCode: appliedVoucher?.code || null

@@ -107,7 +107,7 @@ const CourseTableRow = memo(function CourseTableRow({ course, onStatusUpdate }) 
               </div>
 
               <div className="text-xs text-muted-foreground break-words">
-                {course.moduleCount} chương • {course.lessonCount} bài học
+                {course.moduleCount} chương • {course.lessonCount} bài học • {course.studentCount || 0} học viên
               </div>
             </div>
           </div>
@@ -140,6 +140,7 @@ const CourseTableRow = memo(function CourseTableRow({ course, onStatusUpdate }) 
           <div className="text-xs text-muted-foreground">
             <div>{course.moduleCount} chương</div>
             <div>{course.lessonCount} bài học</div>
+            <div>{course.studentCount || 0} học viên</div>
           </div>
         </td>
 

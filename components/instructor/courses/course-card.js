@@ -244,7 +244,7 @@ export default function CourseCard({ course, onEdit, onDelete }) {
 
         {/* --- Thống kê --- */}
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
-          <span>{course.students ?? 0} học viên</span>
+          <span>{course.studentCount ?? 0} học viên</span>
           <span>•</span>
           <span>{course.moduleCount} modules</span>
           <span>•</span>

@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { BookOpen, FileText, User, Calendar } from "lucide-react"
+import { BookOpen, FileText, User, Calendar, Users } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 
 export function CourseInfo({ course }) {
@@ -29,6 +29,11 @@ export function CourseInfo({ course }) {
       value: course.lessonCount || 0,
     },
     {
+      icon: Users,
+      label: "Học viên",
+      value: course.studentCount || 0,
+    },
+    {
       icon: User,
       label: "Giảng viên",
       value: instructorId ? (<Link href={`/instructors/${instructorId}`} className="text-primary hover:underline">{instructorName}</Link>) : instructorName,
@@ -44,7 +49,7 @@ export function CourseInfo({ course }) {
     <Card className="mb-8">
       <CardContent className="p-6">
         <h2 className="text-2xl font-semibold mb-6">Thông tin khóa học</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
           {infoItems.map((item, index) => (
             <div key={index} className="flex items-start gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">

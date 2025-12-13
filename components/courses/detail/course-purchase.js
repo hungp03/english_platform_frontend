@@ -80,8 +80,7 @@ export function CoursePurchase({ course, isEnrolled = false }) {
         orderSource: "DIRECT",
         items: [
           {
-            entityType: "COURSE",
-            entityId: course.id
+            courseId: course.id
           }
         ]
       }

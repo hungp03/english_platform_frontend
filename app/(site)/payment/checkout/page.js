@@ -80,10 +80,7 @@ export default function CheckoutPage() {
       const orderRequest = {
         orderSource: "CART",
         items: cartData.map((course) => ({
-          entityType: "COURSE",
-          entityId: course.courseId,
-          quantity: 1,
-          unitPriceCents: course.priceCents
+          courseId: course.courseId
         })),
         voucherCode: appliedVoucher?.code || null
       }
