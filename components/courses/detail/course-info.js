@@ -36,7 +36,7 @@ export function CourseInfo({ course }) {
     {
       icon: User,
       label: "Giảng viên",
-      value: instructorId ? (<Link href={`/instructors/${instructorId}`} className="text-primary hover:underline">{instructorName}</Link>) : instructorName,
+      value: instructorId ? (<Link href={`/bio/${instructorId}`} className="text-primary hover:underline">{instructorName}</Link>) : instructorName,
     },
     {
       icon: Calendar,
