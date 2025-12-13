@@ -173,14 +173,18 @@ export default function CreateCoursePage() {
       }
 
       const res = await createCourse(payload)
-      const newCourse = res?.data?.result || res?.data
+      
+      if (res.success) {
+        const newCourse = res?.data?.result || res?.data
+        toast.success("Đã tạo khóa học mới!")
 
-      toast.success("Đã tạo khóa học mới!")
-
-      if (newCourse?.id) {
-        router.push(`/instructor/courses/${newCourse.id}`)
+        if (newCourse?.id) {
+          router.push(`/instructor/courses/${newCourse.id}`)
+        } else {
+          router.push("/instructor/courses")
+        }
       } else {
-        router.push("/instructor/courses")
+        toast.error(res.error || "Không thể tạo khóa học")
       }
     } catch (err) {
       console.error("Lỗi tạo khóa học:", err)

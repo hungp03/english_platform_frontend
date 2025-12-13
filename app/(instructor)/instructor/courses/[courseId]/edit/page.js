@@ -282,10 +282,14 @@ export default function EditCoursePage() {
         currency: (data.currency || "VND").toUpperCase(),
       }
 
-      await updateCourse(courseId, payload)
+      const result = await updateCourse(courseId, payload)
 
-      toast.success("Đã cập nhật khóa học!")
-      router.push(`/instructor/courses/${courseId}`)
+      if (result.success) {
+        toast.success("Đã cập nhật khóa học!")
+        router.push(`/instructor/courses/${courseId}`)
+      } else {
+        toast.error(result.error || "Không thể cập nhật khóa học")
+      }
     } catch (err) {
       console.error("Lỗi cập nhật khóa học:", err)
       toast.error(err?.message || "Không thể cập nhật khóa học")
