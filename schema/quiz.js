@@ -20,10 +20,12 @@ export const quizCreateSchema = z.object({
       message: "Vui lòng chọn loại đề",
     }),
   quizSectionId: z
-    .string()
-    .uuid("Section không hợp lệ")
-    .optional()
-    .nullable(),
+    .string({
+      required_error: "Vui lòng chọn Section", // Báo lỗi nếu giá trị là null/undefined
+      invalid_type_error: "Vui lòng chọn Section",
+    })
+    .uuid("Section không hợp lệ"),
+  // -------------------
   contextText: z.string().optional().or(z.literal("")),
   skill: z.enum(["LISTENING", "READING", "SPEAKING", "WRITING"], {
     required_error: "Vui lòng chọn kỹ năng",
