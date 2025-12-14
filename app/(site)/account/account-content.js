@@ -35,7 +35,7 @@ const AccountContent = memo(() => {
           <Tabs defaultValue={defaultTab} onValueChange={handleTabChange} className="space-y-6">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="profile">Hồ sơ</TabsTrigger>
-              <TabsTrigger value="history">Lịch sử</TabsTrigger>
+              <TabsTrigger value="history">Lịch sử luyện tập</TabsTrigger>
               {/* <TabsTrigger value="preferences">Thông báo</TabsTrigger> */}
             </TabsList>
 

@@ -1,10 +1,11 @@
 "use client";
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-import { User } from "lucide-react";
+import { User, GraduationCap } from "lucide-react";
 import { useAuthStore } from "@/store/auth-store";
 import ProfileForm from "./profile/profile-form";
 import ChangePasswordForm from "./profile/change-password-form";
+import LearningProfileForm from "./profile/learning-profile-form";
 
 export default function ProfileCard() {
   const { hasHydrated } = useAuthStore();
@@ -37,6 +38,20 @@ export default function ProfileCard() {
         </CardHeader>
         <CardContent>
           <ChangePasswordForm />
+        </CardContent>
+      </Card>
+
+      {/* Hồ sơ học tập */}
+      <Card className="md:col-span-2">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <GraduationCap className="h-5 w-5" />
+            Hồ sơ học tập
+          </CardTitle>
+          <CardDescription>Cá nhân hóa lộ trình học của bạn</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <LearningProfileForm />
         </CardContent>
       </Card>
     </div>
