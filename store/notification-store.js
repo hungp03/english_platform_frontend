@@ -137,48 +137,6 @@ export const useNotificationStore = create((set, get) => ({
     }
   },
 
-//   markAllAsRead: async () => {
-//     set(state => {
-//       const updated = state.notifications.map(n => ({ ...n, isRead: true }));
-//       return { notifications: updated, unreadCount: 0 };
-//     });
-
-//     try {
-//       await markAllRead();
-//     } catch (err) {
-
-//       // get().fetchNotifications(0);
-
-//     }
-//   },
-
-//   removeNotification: async (id) => {
-//     // Optimistic remove
-//     set(state => {
-//       const filtered = state.notifications.filter(n => n.id !== id);
-//       return {
-//         notifications: filtered,
-//         unreadCount: filtered.filter(n => !n.isRead).length
-//       };
-//     });
-
-//     try {
-//       await deleteNotification(id);
-//     } catch (err) {
-//       // Nếu xóa thất bại, có thể refetch hoặc thông báo lỗi.
-//       // get().fetchNotifications(0);
-//     }
-//   },
-
-//   removeAll: async () => {
-//     set({ notifications: [], unreadCount: 0 });
-//     try {
-//       await deleteAllNotifications();
-//     } catch (err) {
-//       // nếu lỗi, có thể refetch
-//     }
-//   }
-// }));
 
   markAllAsRead: async () => {
     set(state => ({
@@ -200,5 +158,19 @@ export const useNotificationStore = create((set, get) => ({
   removeAll: async () => {
     set({ notifications: [], unreadCount: 0 });
     await deleteAllNotifications();
+  },
+  
+  clearLocalNotifications: () => {
+    set({
+      notifications: [],
+      unreadCount: 0,
+      loading: false,
+      lastFetchTime: null,
+      pagination: {
+        page: 1,
+        totalPages: 1,
+        totalItems: 0
+      }
+    });
   }
 }));
