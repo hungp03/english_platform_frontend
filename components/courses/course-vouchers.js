@@ -17,7 +17,7 @@ export default function CourseVouchers({ courseId }) {
       try {
         const result = await getCourseVouchers(courseId, 1, 3)
         if (result.success) {
-          setVouchers(result.data.content || [])
+          setVouchers(result.data.result || [])
         }
       } catch (error) {
         console.error("Error fetching vouchers:", error)
