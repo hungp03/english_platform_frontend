@@ -36,11 +36,13 @@ export function useOrders() {
             }
 
             if (dateFilter.from) {
-                params.startDate = dateFilter.from.toISOString()
+                const d = dateFilter.from
+                params.startDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T00:00:00+07:00`
             }
 
             if (dateFilter.to) {
-                params.endDate = dateFilter.to.toISOString()
+                const d = dateFilter.to
+                params.endDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}T23:59:59+07:00`
             }
 
             const result = await getOrders(params)
