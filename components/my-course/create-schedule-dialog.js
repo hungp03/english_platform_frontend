@@ -11,13 +11,24 @@ import {
     DialogHeader,
     DialogTitle,
 } from "@/components/ui/dialog"
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogCancel,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Plus, Trash2, Calendar, Clock, Sparkles, AlertCircle } from "lucide-react"
-import { createStudyPlan, generateAIPlan } from "@/lib/api/schedule"
+import { createStudyPlan, generateAIPlan, checkScheduleOverlap } from "@/lib/api/schedule"
 import { createStudyPlanSchema } from "@/schema/study-plan"
 import { useAuthStore } from "@/store/auth-store"
 import Link from "next/link"
@@ -32,6 +43,9 @@ export default function CreateScheduleDialog({ open, onOpenChange, onSuccess }) 
         notes: ""
     })
     const [aiGeneratedPlan, setAiGeneratedPlan] = useState(null)
+
+    const [conflictDialogOpen, setConflictDialogOpen] = useState(false);
+    const [pendingSubmissionData, setPendingSubmissionData] = useState(null);
 
     // Check if user has linked Google account
     const isGoogleLinked = user?.provider === "GOOGLE"
@@ -74,7 +88,7 @@ export default function CreateScheduleDialog({ open, onOpenChange, onSuccess }) 
         }
     }, [open, reset])
 
-    const onSubmit = async (data) => {
+    const processSubmission = async (data) => {
         try {
             // Convert datetime-local to ISO string
             const formattedSchedules = data.schedules.map((schedule) => ({
@@ -105,6 +119,37 @@ export default function CreateScheduleDialog({ open, onOpenChange, onSuccess }) 
                 type: "manual",
                 message: "Có lỗi xảy ra khi tạo nhắc nhở học tập"
             })
+        } finally {
+            // Reset state chờ
+            setPendingSubmissionData(null);
+            setConflictDialogOpen(false);
+        }
+    }
+
+    const onSubmit = async (data) => {
+        // 1. Kiểm tra trùng lặp trước khi submit
+        let hasConflict = false;
+
+        // Lặp qua từng lịch user nhập để kiểm tra
+        for (const schedule of data.schedules) {
+            if (!schedule.startTime || !schedule.durationMin) continue;
+
+            const startTimeISO = new Date(schedule.startTime).toISOString();
+            const check = await checkScheduleOverlap(startTimeISO, parseInt(schedule.durationMin));
+            
+            if (check.success && check.isOverlap) {
+                hasConflict = true;
+                break; // Chỉ cần 1 cái trùng là cảnh báo ngay
+            }
+        }
+
+        if (hasConflict) {
+            // 2. Nếu trùng, lưu data lại và hiện Popup
+            setPendingSubmissionData(data);
+            setConflictDialogOpen(true);
+        } else {
+            // 3. Nếu không trùng, tạo luôn
+            await processSubmission(data);
         }
     }
 
@@ -175,6 +220,7 @@ export default function CreateScheduleDialog({ open, onOpenChange, onSuccess }) 
     }
 
     return (
+        <>
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="max-w-[calc(100%-2rem)] sm:max-w-6xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
@@ -468,5 +514,35 @@ export default function CreateScheduleDialog({ open, onOpenChange, onSuccess }) 
                 </form>
             </DialogContent>
         </Dialog>
+
+        <AlertDialog open={conflictDialogOpen} onOpenChange={setConflictDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle className="text-amber-600 flex items-center gap-2">
+                            <AlertCircle className="h-5 w-5" />
+                            Phát hiện trùng lịch học
+                        </AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Bạn đã có lịch học khác trong khoảng thời gian này. 
+                            Việc thêm mới có thể gây chồng chéo thời gian biểu.
+                            <br /><br />
+                            Bạn có chắc chắn muốn tiếp tục thêm không?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel onClick={() => setPendingSubmissionData(null)}>
+                            Xem lại
+                        </AlertDialogCancel>
+                        <AlertDialogAction 
+                            onClick={() => processSubmission(pendingSubmissionData)}
+                            className="bg-amber-600 hover:bg-amber-700"
+                        >
+                            Vẫn thêm
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+        </>
+        
     )
 }

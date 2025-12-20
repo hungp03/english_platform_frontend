@@ -21,6 +21,8 @@ import {
   ChevronLeft,
   ChevronRight,
   AlertCircle,
+  Upload, 
+  Download,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
@@ -44,9 +46,10 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { getQuiz, updateQuiz } from "@/lib/api/quiz/quiz";
-import { listQuestionsByQuiz, deleteQuestion, createQuestion, updateQuestion } from "@/lib/api/quiz/question";
+import { listQuestionsByQuiz, deleteQuestion, createQuestion, updateQuestion ,importQuestionsCsv } from "@/lib/api/quiz/question";
 import QuestionForm from "@/components/admin/questions/question-form";
 import ContextEditor from "@/components/admin/questions/context-editor";
+import { useRef } from "react";
 
 const MediaManager = dynamic(() => import("@/components/media/media-manager"), {
   ssr: false,
@@ -57,7 +60,7 @@ const MediaManager = dynamic(() => import("@/components/media/media-manager"), {
   ),
 });
 
-const PageHeader = memo(function PageHeader({ quiz, questionsCount, onAddNew }) {
+const PageHeader = memo(function PageHeader({ quiz, questionsCount, onAddNew, onImport }) {
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div className="flex items-center gap-4">
@@ -85,10 +88,16 @@ const PageHeader = memo(function PageHeader({ quiz, questionsCount, onAddNew }) 
           </div>
         </div>
       </div>
-      <Button onClick={onAddNew} className="w-full sm:w-auto">
-        <Plus className="h-4 w-4 mr-2" />
-        Thêm câu hỏi
-      </Button>
+      <div className="flex items-center gap-2 w-full sm:w-auto">
+        <Button variant="outline" onClick={onImport} className="flex-1 sm:flex-none">
+          <Upload className="h-4 w-4 mr-2" />
+          Import CSV
+        </Button>
+        <Button onClick={onAddNew} className="flex-1 sm:flex-none">
+          <Plus className="h-4 w-4 mr-2" />
+          Thêm câu hỏi
+        </Button>
+      </div>
     </div>
   );
 });
@@ -296,7 +305,7 @@ export default function QuizQuestionsPage() {
   const params = useParams();
   const quizId = params?.id || "unknown";
   const folderPath = `quiz/${quizId}/media`;
-
+  const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(null);
@@ -361,6 +370,31 @@ export default function QuizQuestionsPage() {
       setSaving(false);
     }
   }, [quizId, contextText, explanation]);
+
+  // Hàm xử lý Import
+  const handleFileUpload = async (event) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate đuôi file đơn giản
+    if (!file.name.endsWith(".csv")) {
+      toast.error("Vui lòng chọn file .csv");
+      return;
+    }
+
+    try {
+      setLoading(true); // Hoặc tạo state importing riêng để hiển thị loading
+      await importQuestionsCsv(quizId, file);
+      toast.success("Import câu hỏi thành công!");
+      loadAll(1); // Load lại danh sách
+    } catch (e) {
+      toast.error(e?.response?.data || "Lỗi khi import file");
+    } finally {
+      setLoading(false);
+      // Reset input để cho phép chọn lại cùng 1 file nếu cần
+      if (fileInputRef.current) fileInputRef.current.value = "";
+    }
+  };
 
   const openDeleteDialog = useCallback((question) => {
     setQuestionToDelete(question);
@@ -471,6 +505,10 @@ export default function QuizQuestionsPage() {
     loadAll(p);
   }, [loadAll]);
 
+  const triggerImport = useCallback(() => {
+    fileInputRef.current?.click();
+  }, []);
+  
   if (loading) {
     return (
       <div className="p-4 sm:p-6">
@@ -486,10 +524,24 @@ export default function QuizQuestionsPage() {
       </div>
     );
   }
+  
 
   return (
     <div className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-      <PageHeader quiz={quiz} questionsCount={questions?.length || 0} onAddNew={openAddDialog} />
+      {/* Input file ẩn */}
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept=".csv"
+        onChange={handleFileUpload}
+      />
+      <PageHeader 
+        quiz={quiz} 
+        questionsCount={questions?.length || 0} 
+        onAddNew={openAddDialog} 
+        onImport={triggerImport} // Truyền hàm trigger
+      />
 
       {/* Media Manager */}
       <Card>
