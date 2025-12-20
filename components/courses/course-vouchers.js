@@ -15,7 +15,7 @@ export default function CourseVouchers({ courseId }) {
   useEffect(() => {
     const fetchVouchers = async () => {
       try {
-        const result = await getCourseVouchers(courseId, 0, 3)
+        const result = await getCourseVouchers(courseId, 1, 3)
         if (result.success) {
           setVouchers(result.data.content || [])
         }
