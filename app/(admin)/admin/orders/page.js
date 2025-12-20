@@ -154,6 +154,22 @@ const Filters = memo(function Filters({
 }) {
   const hasFilters = statusFilter !== "all" || dateFilter.from || dateFilter.to;
 
+  const handleFromDateSelect = (date) => {
+    if (date && dateFilter.to && date > dateFilter.to) {
+      setDateFilter({ from: date, to: null });
+    } else {
+      setDateFilter({ from: date, to: dateFilter.to });
+    }
+  };
+
+  const handleToDateSelect = (date) => {
+    if (date && dateFilter.from && date < dateFilter.from) {
+      setDateFilter({ from: date, to: null });
+    } else {
+      setDateFilter({ from: dateFilter.from, to: date });
+    }
+  };
+
   return (
     <div className="flex flex-col sm:flex-row gap-3">
       <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -175,32 +191,45 @@ const Filters = memo(function Filters({
           <Button
             variant="outline"
             className={cn(
-              "w-full sm:w-[240px] justify-start text-left font-normal",
+              "w-full sm:w-[160px] justify-start text-left font-normal",
               !dateFilter.from && "text-muted-foreground"
             )}
           >
             <CalendarIcon className="mr-2 h-4 w-4" />
-            {dateFilter.from ? (
-              dateFilter.to ? (
-                <>
-                  {format(dateFilter.from, "dd/MM/yyyy")} - {format(dateFilter.to, "dd/MM/yyyy")}
-                </>
-              ) : (
-                format(dateFilter.from, "dd/MM/yyyy")
-              )
-            ) : (
-              "Chọn khoảng thời gian"
-            )}
+            {dateFilter.from ? format(dateFilter.from, "dd/MM/yyyy") : "Từ ngày"}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
           <Calendar
-            mode="range"
-            selected={{ from: dateFilter.from, to: dateFilter.to }}
-            onSelect={(range) =>
-              setDateFilter({ from: range?.from || null, to: range?.to || null })
+            mode="single"
+            selected={dateFilter.from}
+            onSelect={handleFromDateSelect}
+            disabled={(date) => date > new Date()}
+          />
+        </PopoverContent>
+      </Popover>
+
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className={cn(
+              "w-full sm:w-[160px] justify-start text-left font-normal",
+              !dateFilter.to && "text-muted-foreground"
+            )}
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {dateFilter.to ? format(dateFilter.to, "dd/MM/yyyy") : "Đến ngày"}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={dateFilter.to}
+            onSelect={handleToDateSelect}
+            disabled={(date) => 
+              date > new Date() || (dateFilter.from && date < dateFilter.from)
             }
-            numberOfMonths={2}
           />
         </PopoverContent>
       </Popover>
