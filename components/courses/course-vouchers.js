@@ -60,26 +60,26 @@ export default function CourseVouchers({ courseId }) {
         {vouchers.map((voucher) => (
           <div
             key={voucher.id}
-            className="flex items-center justify-between p-3 border rounded-lg bg-gradient-to-r from-green-50 to-blue-50 border-green-200"
+            className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-3 border rounded-lg bg-gradient-to-r from-green-50 to-blue-50 border-green-200"
           >
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full">
+            <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+              <div className="flex items-center justify-center w-10 h-10 bg-green-100 rounded-full flex-shrink-0">
                 {voucher.discountType === "PERCENTAGE" ? (
                   <Percent className="w-5 h-5 text-green-600" />
                 ) : (
                   <DollarSign className="w-5 h-5 text-green-600" />
                 )}
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <Badge variant="secondary" className="font-mono text-sm">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="secondary" className="font-mono text-xs sm:text-sm">
                     {voucher.code}
                   </Badge>
-                  <Badge variant="outline" className="text-green-700 bg-green-100">
+                  <Badge variant="outline" className="text-green-700 bg-green-100 text-xs sm:text-sm">
                     Giảm {formatDiscount(voucher)}
                   </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
                   {voucher.minOrderAmount > 0 && (
                     <>Đơn tối thiểu {voucher.minOrderAmount.toLocaleString()}đ • </>
                   )}
@@ -91,10 +91,10 @@ export default function CourseVouchers({ courseId }) {
               variant="outline"
               size="sm"
               onClick={() => copyVoucherCode(voucher.code)}
-              className="flex items-center gap-1"
+              className="flex items-center justify-center gap-1 w-full sm:w-auto"
             >
               <Copy className="w-4 h-4" />
-              Sao chép
+              <span className="sm:inline">Sao chép</span>
             </Button>
           </div>
         ))}
