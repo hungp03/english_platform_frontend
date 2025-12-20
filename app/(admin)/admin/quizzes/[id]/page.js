@@ -181,6 +181,7 @@ export default function AdminQuizEditorPage() {
   const {
     control,
     handleSubmit,
+    setError: setFormError,
     formState: { errors, isSubmitting },
     setValue,
     watch,
@@ -300,7 +301,26 @@ export default function AdminQuizEditorPage() {
       }
       router.push("/admin/quizzes");
     } catch (e) {
-      toast.error(e?.response?.data?.message || "Lưu thất bại");
+      const status = e?.response?.status;
+      const message =
+        e?.response?.data?.message || e?.message || "Lưu thất bại";
+  
+      if (status === 409) {
+        if (message.toLowerCase().includes("title")) {
+          setFormError("title", {
+            type: "manual",
+            message: "Tiêu đề này đã tồn tại trong phần thi/loại đề này.",
+          });
+  
+          const titleInput = document.querySelector('input[name="title"]');
+          if (titleInput) titleInput.focus();
+  
+          toast.error("Tên đề thi bị trùng, vui lòng kiểm tra lại.");
+          return;
+        }
+      }
+  
+      toast.error(message);
     }
   };
 

@@ -7,7 +7,7 @@ import { login as apiLogin, logout, logoutAll } from '@/lib/api/auth'
 
 // Import cart store for clearing cart during logout
 import { useCartStore } from './cart-store'
-
+import { useNotificationStore } from './notification-store'
 // Ignore this flag after first bootstrap
 // (to avoid multiple re-fetches in dev mode with React StrictMode)
 let didBootstrap = false
@@ -27,6 +27,14 @@ const clearCartOnLogout = () => {
     localStorage.removeItem('engpro-cart-storage')
   } catch (error) {
     console.error('Failed to clear cart on logout:', error)
+  }
+}
+
+const clearNotificationsOnLogout = () => {
+  try {
+    useNotificationStore.getState().clearLocalNotifications()
+  } catch (error) {
+    console.error('Failed to clear notifications on logout:', error)
   }
 }
 
@@ -121,11 +129,13 @@ export const useAuthStore = create()(
           set({ user: null, isLoggedIn: false })
           // Clear cart data when user logs out
           clearCartOnLogout()
+          clearNotificationsOnLogout()
           return result?.success ? { success: true } : { error: 'Đăng xuất thất bại.' }
         } catch {
           set({ user: null, isLoggedIn: false })
           // Clear cart data even on error
           clearCartOnLogout()
+          clearNotificationsOnLogout()
           return { error: 'Đăng xuất thất bại.' }
         }
       },
@@ -136,11 +146,13 @@ export const useAuthStore = create()(
           set({ user: null, isLoggedIn: false })
           // Clear cart data when user logs out from all devices
           clearCartOnLogout()
+          clearNotificationsOnLogout()
           return result?.success ? { success: true } : { error: 'Đăng xuất tất cả thất bại.' }
         } catch {
           set({ user: null, isLoggedIn: false })
           // Clear cart data even on error
           clearCartOnLogout()
+          clearNotificationsOnLogout()
           return { error: 'Đăng xuất tất cả thất bại.' }
         }
       },
