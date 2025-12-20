@@ -420,9 +420,15 @@ export default function AdminQuizSectionsPage() {
 
       <SectionFilters
         filterType={filterType}
-        onFilterTypeChange={setFilterType}
+        onFilterTypeChange={(val) => {
+          setFilterType(val);
+          setPage(1); 
+        }}
         keyword={keyword}
-        onKeywordChange={setKeyword}
+        onKeywordChange={(val) => {
+          setKeyword(val);
+          setPage(1);
+        }}
         types={types}
       />
 
