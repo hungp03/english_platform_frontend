@@ -152,6 +152,7 @@ export default function AdminQuizzesPage() {
   }, [quizTypeId, skill, quizSectionId]);
 
   const onChangeSection = useCallback((val) => {
+    setPage(1);
     setQuizSectionId(val || "all");
     if (!val || val === "all") return;
     if (!skill || skill === "all") {
@@ -201,11 +202,14 @@ export default function AdminQuizzesPage() {
         keyword={keyword}
         setKeyword={setKeyword}
         quizTypeId={quizTypeId}
-        setQuizTypeId={setQuizTypeId}
+        // setQuizTypeId={setQuizTypeId}
+        setQuizTypeId={(val) => { setQuizTypeId(val); setPage(1); }}
         status={status}
-        setStatus={setStatus}
+        // setStatus={setStatus}
+        setStatus={(val) => { setStatus(val); setPage(1); }}
         skill={skill}
-        setSkill={setSkill}
+        // setSkill={setSkill}
+        setSkill={(val) => { setSkill(val); setPage(1); }}
         quizSectionId={quizSectionId}
         setQuizSectionId={setQuizSectionId}
         types={types}
@@ -224,8 +228,9 @@ export default function AdminQuizzesPage() {
 
         {!loading && items.length > 0 && totalPages > 1 && (
           <div className="mt-4 flex justify-center">
+
             <QuizPagination
-              page={page}
+              currentPage={page}
               totalPages={totalPages}
               onPageChange={handlePageChange}
             />
