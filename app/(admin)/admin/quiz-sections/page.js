@@ -343,10 +343,9 @@ export default function AdminQuizSectionsPage() {
       setSectionToDelete(null);
     } catch (e) {
       setItems(previousItems);
-      const errorMsg = getErrorMessage(e);
-      toast.error(errorMsg);
+      toast.error("Không thể xóa phần thi này");
     }
-  }, [sectionToDelete, items, getErrorMessage]);
+  }, [sectionToDelete, items]);
 
   const startEdit = useCallback((it) => {
     setEditingId(String(it.id));

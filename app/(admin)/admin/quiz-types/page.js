@@ -152,11 +152,7 @@ export default function QuizTypesPage() {
       toast.success("Xóa thành công", { description: "QuizType đã bị xóa." });
     } catch (error) {
       setList(previousList);
-      const errorMessage = error?.response?.data?.message || error?.message || "Không thể xóa QuizType này";
-      const errorCode = error?.response?.data?.code;
-      toast.error("Lỗi", {
-        description: `${errorMessage}${errorCode ? ` (Mã: ${errorCode})` : ""}`
-      });
+      toast.error("Không thể xóa loại đề thi này");
     } finally {
       setDeleteTargetId(null);
     }
