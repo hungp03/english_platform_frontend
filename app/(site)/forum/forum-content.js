@@ -11,6 +11,8 @@ import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/auth-store"; 
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
+import { vi } from "date-fns/locale";
 
 export default function ForumContent() {
   const [items, setItems] = useState([]);
@@ -157,7 +159,7 @@ export default function ForumContent() {
                         <span className="font-medium">{t.authorName || "Ẩn danh"}</span>
                       </div>
                       <span className="hidden sm:inline">•</span>
-                      <span className="text-xs">{t.createdAt ? new Date(t.createdAt).toLocaleDateString('vi-VN') : ""}</span>
+                      <span className="text-xs">{t.createdAt ? formatDistanceToNow(new Date(t.createdAt), { addSuffix: true, locale: vi }) : ""}</span>
                     </div>
                     <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
                       <span className="flex items-center gap-1">

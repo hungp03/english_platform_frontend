@@ -3,6 +3,8 @@ import { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { MoreVertical, ArrowLeft } from "lucide-react";
+import { formatDistanceToNow } from "date-fns";
+import { vi } from "date-fns/locale";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -281,7 +283,7 @@ export default function ThreadDetailPage() {
                 <span>•</span>
                 <span>
                   {thread.createdAt
-                    ? new Date(thread.createdAt).toLocaleString("vi-VN")
+                    ? formatDistanceToNow(new Date(thread.createdAt), { addSuffix: true, locale: vi })
                     : ""}
                 </span>
               </div>
@@ -395,7 +397,7 @@ export default function ThreadDetailPage() {
                             />
                             <span>{p.authorName || "Ẩn danh"}</span>
                             <span>•</span>
-                            <span>{p.createdAt ? new Date(p.createdAt).toLocaleString("vi-VN") : ""}</span>
+                            <span>{p.createdAt ? formatDistanceToNow(new Date(p.createdAt), { addSuffix: true, locale: vi }) : ""}</span>
                           </div>
 
                           {eqIds(user?.id, p.authorId) && (
@@ -460,7 +462,7 @@ export default function ThreadDetailPage() {
                                     />
                                     <span>{c.authorName || "Ẩn danh"}</span>
                                     <span>•</span>
-                                    <span>{c.createdAt ? new Date(c.createdAt).toLocaleString("vi-VN") : ""}</span>
+                                    <span>{c.createdAt ? formatDistanceToNow(new Date(c.createdAt), { addSuffix: true, locale: vi }) : ""}</span>
                                   </div>
 
                                   {eqIds(user?.id, c.authorId) && (

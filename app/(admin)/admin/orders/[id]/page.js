@@ -4,7 +4,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useState, useEffect, useCallback } from "react";
 import { toast } from "sonner";
-import { formatCurrency, formatDate, cn } from "@/lib/utils";
+import { formatCurrency, formatDateTime, cn } from "@/lib/utils";
 import {
   ArrowLeft,
   ShoppingCart,
@@ -105,7 +105,7 @@ function PageHeader({ order, onOpenStatusDialog }) {
           </div>
         </div>
       </div>
-      {order && (
+      {order && !["CANCELLED", "PAID", "REFUNDED"].includes(order.status) && (
         <Button variant="outline" size="sm" onClick={onOpenStatusDialog}>
           <Edit className="h-4 w-4 mr-2" />
           <span className="hidden sm:inline">Cập nhật trạng thái</span>
@@ -299,7 +299,7 @@ function PaymentsCard({ payments }) {
                     )}
                     <span>{payment.status === "SUCCESS" ? "Thành công" : payment.status}</span>
                   </div>
-                  <span>{formatDate(payment.createdAt)}</span>
+                  <span>{formatDateTime(payment.createdAt)}</span>
                 </div>
               </div>
             ))}
@@ -349,7 +349,7 @@ function SummaryCard({ order }) {
           <p className="text-xs text-muted-foreground mb-1">Ngày tạo</p>
           <div className="flex items-center gap-1 text-sm">
             <Calendar className="h-3 w-3" />
-            {formatDate(order.createdAt)}
+            {formatDateTime(order.createdAt)}
           </div>
         </div>
         {order.paidAt && (
@@ -357,7 +357,7 @@ function SummaryCard({ order }) {
             <p className="text-xs text-muted-foreground mb-1">Ngày thanh toán</p>
             <div className="flex items-center gap-1 text-sm text-green-600">
               <CheckCircle className="h-3 w-3" />
-              {formatDate(order.paidAt)}
+              {formatDateTime(order.paidAt)}
             </div>
           </div>
         )}
