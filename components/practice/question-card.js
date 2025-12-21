@@ -13,6 +13,7 @@ const QuestionCard = memo(function QuestionCard({
   total,
   answered,
   answers,
+  audioBlobs,
   isMCQ,
   isSpeaking,
   onChoose,
@@ -59,6 +60,7 @@ const QuestionCard = memo(function QuestionCard({
                 questionId={current.id} 
                 onAnswer={onChoose}
                 onAudioReady={onAudioReady}
+                initialAudioBlob={audioBlobs?.[current.id]}
               />
             ) : (
               <TextAnswer 
