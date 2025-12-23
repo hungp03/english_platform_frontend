@@ -17,6 +17,7 @@ import {
   CoursePurchase,
   CourseModules,
 } from "@/components/courses/detail"
+import CourseVouchers from "@/components/courses/course-vouchers"
 
 export default function CourseDetailPage() {
   const params = useParams()
@@ -113,6 +114,7 @@ export default function CourseDetailPage() {
 
           {/* Right Column - Purchase Section */}
           <div className="lg:col-span-1">
+            <CourseVouchers courseId={course.id} />
             <CoursePurchase course={course} isEnrolled={isEnrolled} />
           </div>
         </div>

@@ -1,22 +1,35 @@
-import { useState, useRef, memo } from "react";
+import { useState, useRef, memo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Mic, Square, Play, Pause, Upload } from "lucide-react";
+import { Mic, Square, Upload } from "lucide-react";
 
-const SpeakingRecorder = memo(function SpeakingRecorder({ questionId, onAnswer, onAudioReady }) {
+const SpeakingRecorder = memo(function SpeakingRecorder({ questionId, onAnswer, onAudioReady, initialAudioBlob }) {
   const [micPermission, setMicPermission] = useState(false);
   const [recording, setRecording] = useState(false);
-  const [audioBlob, setAudioBlob] = useState(null);
+  const [audioBlob, setAudioBlob] = useState(initialAudioBlob || null);
   const [recordingTime, setRecordingTime] = useState(0);
-  const [playing, setPlaying] = useState(false);
   const [warning, setWarning] = useState("");
   const [uploadedFileName, setUploadedFileName] = useState("");
-  const [audioUrl, setAudioUrl] = useState(null);
+  const [audioUrl, setAudioUrl] = useState(initialAudioBlob ? URL.createObjectURL(initialAudioBlob) : null);
   
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const timerRef = useRef(null);
-  const audioRef = useRef(null);
   const fileInputRef = useRef(null);
+
+  // Reset state khi questionId thay đổi
+  useEffect(() => {
+    setRecording(false);
+    setRecordingTime(0);
+    setWarning("");
+    setUploadedFileName("");
+    if (initialAudioBlob) {
+      setAudioBlob(initialAudioBlob);
+      setAudioUrl(URL.createObjectURL(initialAudioBlob));
+    } else {
+      setAudioBlob(null);
+      setAudioUrl(null);
+    }
+  }, [questionId, initialAudioBlob]);
 
   const requestMicPermission = async () => {
     try {
@@ -83,28 +96,6 @@ const SpeakingRecorder = memo(function SpeakingRecorder({ questionId, onAnswer, 
     }
   };
 
-  const playAudio = () => {
-    if (audioUrl) {
-      if (audioRef.current) {
-        audioRef.current.pause();
-      }
-      const audio = new Audio(audioUrl);
-      audioRef.current = audio;
-      
-      audio.onplay = () => setPlaying(true);
-      audio.onpause = () => setPlaying(false);
-      audio.onended = () => setPlaying(false);
-      
-      audio.play();
-    }
-  };
-
-  const pauseAudio = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-  };
-
   const handleFileUpload = (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -134,7 +125,7 @@ const SpeakingRecorder = memo(function SpeakingRecorder({ questionId, onAnswer, 
         <p className="text-sm text-blue-700 dark:text-blue-300">
           {!recording && !audioBlob && "Nhấn nút bên dưới để bắt đầu ghi âm hoặc tải file lên"}
           {recording && "Đang ghi âm... Hãy nói câu trả lời của bạn"}
-          {!recording && audioBlob && (uploadedFileName ? `File: ${uploadedFileName}` : "Ghi âm hoàn tất! Bạn có thể nghe lại hoặc ghi lại")}
+          {!recording && audioBlob && (uploadedFileName ? `File: ${uploadedFileName}` : "Ghi âm hoàn tất! Bạn có thể ghi lại nếu muốn")}
         </p>
         {warning && <p className="text-sm text-red-600">{warning}</p>}
       </div>
@@ -180,31 +171,6 @@ const SpeakingRecorder = memo(function SpeakingRecorder({ questionId, onAnswer, 
                 onChange={handleFileUpload}
                 className="hidden"
               />
-              {audioBlob && (
-                <>
-                  {!playing ? (
-                    <Button
-                      onClick={playAudio}
-                      variant="outline"
-                      size="lg"
-                      className="gap-2 border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-950"
-                    >
-                      <Play className="h-5 w-5" />
-                      Nghe lại
-                    </Button>
-                  ) : (
-                    <Button
-                      onClick={pauseAudio}
-                      variant="outline"
-                      size="lg"
-                      className="gap-2 border-green-600 text-green-600 hover:bg-green-50 dark:hover:bg-green-950"
-                    >
-                      <Pause className="h-5 w-5" />
-                      Tạm dừng
-                    </Button>
-                  )}
-                </>
-              )}
             </>
           ) : (
             <Button
@@ -226,9 +192,6 @@ const SpeakingRecorder = memo(function SpeakingRecorder({ questionId, onAnswer, 
               preload="metadata"
               className="w-full max-w-md"
               src={audioUrl}
-              onPlay={() => setPlaying(true)}
-              onPause={() => setPlaying(false)}
-              onEnded={() => setPlaying(false)}
             />
             <div className="flex items-center gap-2 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-950 px-4 py-2 rounded-lg">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">

@@ -3,6 +3,8 @@ import React from "react";
 import Link from "next/link";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { formatDistanceToNow } from "date-fns";
+import { vi } from "date-fns/locale";
 
 export default function PostCard({ post }) {
   return (
@@ -21,7 +23,7 @@ export default function PostCard({ post }) {
           ))}
         </div>
         <div className="text-sm text-muted-foreground mt-2">
-          {post.publishedAt ? new Date(post.publishedAt).toLocaleString() : ""}
+          {post.publishedAt ? formatDistanceToNow(new Date(post.publishedAt), { addSuffix: true, locale: vi }) : ""}
         </div>
       </CardContent>
     </Card>

@@ -3,6 +3,8 @@ import React, { useEffect, useState, useCallback, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
 import { toast } from "sonner";
+import { formatDistanceToNow } from "date-fns";
+import { vi } from "date-fns/locale";
 import { publicGetPostBySlug } from "@/lib/api/content/posts";
 import {
   publicListCommentsByPostPaged,
@@ -126,7 +128,7 @@ export default function BlogDetailPage() {
       avatarUrl: post.authorAvatarUrl,
       name: post.authorName || "Ẩn danh",
       createdAt: post.createdAt 
-        ? new Date(post.createdAt).toLocaleString("vi-VN") 
+        ? formatDistanceToNow(new Date(post.createdAt), { addSuffix: true, locale: vi })
         : ""
     };
   }, [post]);

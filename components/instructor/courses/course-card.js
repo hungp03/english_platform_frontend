@@ -35,6 +35,7 @@ export default function CourseCard({ course, onEdit, onDelete }) {
 
   const isPublished = status === "PUBLISHED"
   const canEdit = status === "DRAFT" || status === "REJECTED" || status === "UNPUBLISHED"
+  const canDelete = (course.studentCount ?? 0) === 0
 
   const handleEditClick = () => {
     if (!canEdit) {
@@ -232,12 +233,26 @@ export default function CourseCard({ course, onEdit, onDelete }) {
                 </DropdownMenuItem>
               )}
 
-              <DropdownMenuItem
-                className="text-destructive"
-                onClick={() => onDelete(course)}
-              >
-                <Trash2 className="h-4 w-4 mr-2" /> Xóa
-              </DropdownMenuItem>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onClick={() => onDelete(course)}
+                        disabled={!canDelete}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" /> Xóa
+                      </DropdownMenuItem>
+                    </div>
+                  </TooltipTrigger>
+                  {!canDelete && (
+                    <TooltipContent side="left">
+                      Không thể xóa khóa học khi đã có học viên
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

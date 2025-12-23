@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { CreditCard, CheckCircle, XCircle } from "lucide-react"
-import { formatCurrency, formatDate } from "@/lib/utils"
+import { formatCurrency, formatDateTime } from "@/lib/utils"
 
 export function PaymentInfo({ payments }) {
     return (
@@ -42,7 +42,7 @@ export function PaymentInfo({ payments }) {
                                     </div>
                                     <div>
                                         <p className="text-xs sm:text-sm text-gray-600">Thời gian</p>
-                                        <p className="font-medium text-sm sm:text-base">{formatDate(payment.createdAt)}</p>
+                                        <p className="font-medium text-sm sm:text-base">{formatDateTime(payment.createdAt)}</p>
                                     </div>
                                 </div>
                             </div>

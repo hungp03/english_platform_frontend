@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { FileText } from "lucide-react"
-import { formatDate } from "@/lib/utils"
+import { formatDateTime } from "@/lib/utils"
 import { getStatusIcon, getStatusVariant, getStatusText } from "@/components/admin/orders/order-helpers"
 
 export function OrderSummary({ orderDetails }) {
@@ -33,12 +33,12 @@ export function OrderSummary({ orderDetails }) {
                 </div>
                 <div>
                     <p className="text-xs sm:text-sm text-gray-600">Ngày tạo</p>
-                    <p className="font-medium text-sm sm:text-base">{formatDate(orderDetails.createdAt)}</p>
+                    <p className="font-medium text-sm sm:text-base">{formatDateTime(orderDetails.createdAt)}</p>
                 </div>
                 {orderDetails.paidAt && (
                     <div>
                         <p className="text-xs sm:text-sm text-gray-600">Ngày thanh toán</p>
-                        <p className="font-medium text-sm sm:text-base">{formatDate(orderDetails.paidAt)}</p>
+                        <p className="font-medium text-sm sm:text-base">{formatDateTime(orderDetails.paidAt)}</p>
                     </div>
                 )}
             </CardContent>

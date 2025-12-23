@@ -6,7 +6,9 @@ import {
   FileText,
   PlayCircle,
   X,
-  Check
+  Check,
+  BookOpen,
+  HelpCircle
 } from "lucide-react"
 
 export default function CourseSidebar({
@@ -80,11 +82,16 @@ export default function CourseSidebar({
                               onClick={() => onLessonClick(lesson, module.id)}
                               className="flex-1 p-3 flex items-center gap-3 text-left min-w-0"
                             >
-                              {isQuiz ? (
-                                <FileText className="w-4 h-4 flex-shrink-0 text-muted-foreground" />
-                              ) : (
-                                <PlayCircle className="w-4 h-4 flex-shrink-0 text-muted-foreground" />
-                              )}
+                              {(() => {
+                                const lessonKind = lesson.kind?.toLowerCase()
+                                if (lessonKind === "quiz") {
+                                  return <HelpCircle className="w-4 h-4 flex-shrink-0 text-muted-foreground" />
+                                } else if (lessonKind === "text") {
+                                  return <BookOpen className="w-4 h-4 flex-shrink-0 text-muted-foreground" />
+                                } else {
+                                  return <PlayCircle className="w-4 h-4 flex-shrink-0 text-muted-foreground" />
+                                }
+                              })()}
                               <div className="flex-1 min-w-0">
                                 <p className={`text-sm truncate ${isCurrentLesson ? "font-semibold" : ""
                                   } ${isCompleted ? "line-through text-muted-foreground" : ""}`}>

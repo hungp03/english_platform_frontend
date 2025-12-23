@@ -222,10 +222,14 @@ export default function PracticePage() {
     const skill = quiz?.skill?.toUpperCase();
     const isAssessmentQuiz = skill === 'SPEAKING' || skill === 'WRITING';
     
+    if (isAssessmentQuiz && answered < 1) {
+      setWarningMessage(`Bạn cần trả lời ít nhất 1 câu hỏi trước khi nộp bài.`);
+      setWarningDialogOpen(true);
+      return;
+    }
+    
     if (isAssessmentQuiz && answered < total) {
-      setWarningMessage(
-        `Bạn phải hoàn thành tất cả ${total} câu hỏi trước khi nộp bài.`
-      );
+      setWarningMessage(`Bạn mới trả lời ${answered}/${total} câu. Vẫn nộp bài?`);
       setWarningDialogOpen(true);
       return;
     }
@@ -417,6 +421,7 @@ export default function PracticePage() {
             total={total}
             answered={answered}
             answers={answers}
+            audioBlobs={audioBlobs}
             isMCQ={isMCQ}
             isSpeaking={isSpeaking}
             onChoose={onChoose}
