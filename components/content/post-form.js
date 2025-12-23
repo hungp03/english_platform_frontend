@@ -66,11 +66,15 @@ export default function PostForm({
         )}
       </div>
       
+      {/* --- SLUG READ-ONLY --- */}
       <div className="grid gap-1">
-        <label className="text-sm font-medium">Slug (tùy chọn)</label>
+        <label className="text-sm font-medium">Slug</label>
         <Input
           {...register("slug")}
-          placeholder="vd: 10-meo-luyen-toeic"
+          readOnly={true} // Chặn nhập liệu
+          className="bg-muted text-muted-foreground cursor-not-allowed opacity-100" // Style xám (shadcn/ui standard)
+          placeholder={isEdit ? "" : "Slug sẽ được tạo tự động sau khi lưu"}
+          tabIndex={-1} // Bỏ qua khi nhấn tab
         />
         {errors.slug && (
           <p className="text-sm text-destructive">{errors.slug.message}</p>
