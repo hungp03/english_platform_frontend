@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { getPublishedModules } from "@/lib/api/course-module"
-import { listCourseLessons } from "@/lib/api/lesson"
+import { listPublishedCourseLessons } from "@/lib/api/lesson"
 import { AdminLessonPreviewDialog } from "./admin-lesson-preview-dialog"
 
 export function AdminCourseModules({ courseId }) {
@@ -52,7 +52,7 @@ export function AdminCourseModules({ courseId }) {
         if (!isCurrentlyExpanded && !moduleLessons[moduleId]) {
             setLoadingLessons((prev) => new Set(prev).add(moduleId))
 
-            const result = await listCourseLessons(moduleId)
+            const result = await listPublishedCourseLessons(moduleId)
 
             if (result.success) {
                 setModuleLessons((prev) => ({

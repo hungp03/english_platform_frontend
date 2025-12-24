@@ -23,7 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getCourseBySlug } from "@/lib/api/course";
+import { getAdminCourseBySlug } from "@/lib/api/course";
 import { formatCurrency, cn } from "@/lib/utils";
 import { AdminCourseModules } from "@/components/admin/courses/detail";
 
@@ -295,7 +295,7 @@ export default function AdminCourseDetailPage() {
     setLoading(true);
     setError(null);
 
-    const result = await getCourseBySlug(params.slug);
+    const result = await getAdminCourseBySlug(params.slug);
 
     if (result.success) {
       setCourse(result.data);
