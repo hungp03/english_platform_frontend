@@ -5,7 +5,7 @@ import { ChevronDown, ChevronRight, FileText, CheckCircle2, Clock, PlayCircle, H
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { getCourseModules } from "@/lib/api/course-module"
+import { getPublishedModules } from "@/lib/api/course-module"
 import { listCourseLessons } from "@/lib/api/lesson"
 import { AdminLessonPreviewDialog } from "./admin-lesson-preview-dialog"
 
@@ -26,10 +26,10 @@ export function AdminCourseModules({ courseId }) {
 
     const fetchModules = async () => {
         setLoading(true)
-        const result = await getCourseModules(courseId)
+        const result = await getPublishedModules(courseId)
 
-        if (result) {
-            setModules(result || [])
+        if (result.success) {
+            setModules(result.data || [])
         }
 
         setLoading(false)
