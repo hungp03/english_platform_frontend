@@ -31,7 +31,7 @@ const AdminSidebar = () => {
     { title: "Quản lí giảng viên", path: "/admin/instructors", icon: GraduationCap },
     { title: "Quản lí khóa học", path: "/admin/courses", icon: BookOpen },
     { title: "Quản lí phân loại forum", path: "/admin/forum/categories", icon: Layers },
-    { title: "Quản lí report forum", path: "/admin/forum/reports", icon: Flag },
+    { title: "Quản lí report", path: "/admin/forum/reports", icon: Flag },
     {
       title: "Quản lí danh mục blog",
       path: "/admin/content/categories",
