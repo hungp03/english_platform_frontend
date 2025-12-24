@@ -6,6 +6,8 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+// import {adminDeleteReview} from "@/lib/api/review"; // Import API xóa review
+
 import {
   Select,
   SelectTrigger,
@@ -36,8 +38,9 @@ import {
   User,
   AlertTriangle,
   ShieldCheck,
-  Lock,   // Import thêm icon Lock
-  Unlock, // Import thêm icon Unlock
+  Lock,
+  Unlock,
+  Star, // Import icon Star cho Review
 } from "lucide-react";
 import {
   adminGetReports,
@@ -46,9 +49,11 @@ import {
   adminUnhidePost,
   adminDeletePost,
   adminDeleteThread,
-  adminLockThread,   // Import API Lock
-  adminUnlockThread, // Import API Unlock
+  adminLockThread,
+  adminUnlockThread,
 } from "@/lib/api/forum";
+// Import API xóa review từ file review.js
+import { adminDeleteReview } from "@/lib/api/review"; 
 
 const PageHeader = memo(function PageHeader() {
   return (
@@ -57,9 +62,9 @@ const PageHeader = memo(function PageHeader() {
         <Flag className="h-5 w-5 text-primary" />
       </div>
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Báo cáo Forum</h1>
+        <h1 className="text-2xl font-bold tracking-tight">Báo cáo & Vi phạm</h1>
         <p className="text-sm text-muted-foreground">
-          Xử lý các báo cáo vi phạm từ người dùng
+          Quản lý báo cáo chủ đề, bài viết và đánh giá khóa học
         </p>
       </div>
     </div>
@@ -70,13 +75,14 @@ const ReportFilters = memo(function ReportFilters({ type, onTypeChange, onlyOpen
   return (
     <div className="flex flex-wrap gap-3 items-center">
       <Select value={type} onValueChange={onTypeChange}>
-        <SelectTrigger className="w-[160px]">
+        <SelectTrigger className="w-[180px]">
           <Filter className="w-4 h-4 mr-2 flex-shrink-0" />
           <SelectValue placeholder="Đối tượng" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="THREAD">Chủ đề</SelectItem>
-          <SelectItem value="POST">Bài viết</SelectItem>
+          <SelectItem value="THREAD">Chủ đề (Forum)</SelectItem>
+          <SelectItem value="POST">Bài viết (Forum)</SelectItem>
+          <SelectItem value="COURSE_REVIEW">Đánh giá khóa học</SelectItem>
         </SelectContent>
       </Select>
       <Select value={onlyOpen} onValueChange={onOnlyOpenChange}>
@@ -92,29 +98,33 @@ const ReportFilters = memo(function ReportFilters({ type, onTypeChange, onlyOpen
   );
 });
 
-// Cập nhật ReportItem để nhận thêm props onLock, onUnlock
 const ReportItem = memo(function ReportItem({ report, onResolve, onDelete, onHide, onUnhide, onLock, onUnlock }) {
   const isResolved = !!report.resolvedAt;
   const isThread = report.targetType === "THREAD";
+  const isPost = report.targetType === "POST";
+  const isReview = report.targetType === "COURSE_REVIEW";
 
-  // Logic map từ backend: targetPublished = true (là chưa bị ẩn/khóa), false (là đã bị ẩn/khóa)
-  // Với Thread: targetPublished = !isLocked
-  // Với Post: targetPublished = isPublished
+  // Xác định màu sắc và icon dựa trên loại report
+  let iconObj = { icon: MessageSquare, bg: "bg-orange-100 dark:bg-orange-900/30", text: "text-orange-600 dark:text-orange-400", label: "Bài viết" };
+  if (isThread) {
+    iconObj = { icon: FileText, bg: "bg-blue-100 dark:bg-blue-900/30", text: "text-blue-600 dark:text-blue-400", label: "Chủ đề" };
+  } else if (isReview) {
+    iconObj = { icon: Star, bg: "bg-yellow-100 dark:bg-yellow-900/30", text: "text-yellow-600 dark:text-yellow-400", label: "Đánh giá" };
+  }
+
+  const TypeIcon = iconObj.icon;
 
   return (
     <div className={`border rounded-lg p-4 space-y-3 transition-colors ${isResolved ? 'bg-muted/30' : 'hover:bg-muted/50'}`}>
       <div className="flex items-start justify-between gap-3">
+        {/* Header: Icon Loại + Ngày tháng */}
         <div className="flex items-center gap-2">
-          <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isThread ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-orange-100 dark:bg-orange-900/30'}`}>
-            {isThread ? (
-              <FileText className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-            ) : (
-              <MessageSquare className="h-4 w-4 text-orange-600 dark:text-orange-400" />
-            )}
+          <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${iconObj.bg}`}>
+            <TypeIcon className={`h-4 w-4 ${iconObj.text}`} />
           </div>
           <div>
-            <Badge variant={isThread ? "default" : "secondary"} className="text-xs">
-              {isThread ? "Chủ đề" : "Bài viết"}
+            <Badge variant="outline" className={`${iconObj.text} border-current opacity-80`}>
+              {iconObj.label}
             </Badge>
           </div>
         </div>
@@ -124,13 +134,17 @@ const ReportItem = memo(function ReportItem({ report, onResolve, onDelete, onHid
         </div>
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-3 pl-10"> {/* Indent content */}
+        {/* Thông tin người báo cáo */}
         <div className="flex items-center gap-2 text-sm">
           <User className="h-4 w-4 text-muted-foreground" />
           <span className="text-muted-foreground">Người báo cáo:</span>
           <span className="font-medium">{report.reporterName || report.userId}</span>
         </div>
 
+        {/* --- KHU VỰC HIỂN THỊ NỘI DUNG --- */}
+        
+        {/* 1. Trường hợp THREAD: Hiện Link */}
         {isThread && report.targetPreview && (
           <div className="flex items-start gap-2">
             <ExternalLink className="h-4 w-4 text-muted-foreground mt-0.5" />
@@ -140,7 +154,7 @@ const ReportItem = memo(function ReportItem({ report, onResolve, onDelete, onHid
                 href={`/forum/${report.targetPreview}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-primary hover:underline break-all"
+                className="text-sm text-primary hover:underline break-all font-medium"
               >
                 {report.targetPreview}
               </a>
@@ -148,28 +162,66 @@ const ReportItem = memo(function ReportItem({ report, onResolve, onDelete, onHid
           </div>
         )}
 
-        {!isThread && report.targetPreview && (
-          <div className="mt-2 p-3 rounded-lg bg-muted/50 border">
+        {/* 2. Trường hợp POST: Hiện nội dung bình luận */}
+        {isPost && report.targetPreview && (
+          <div className="p-3 rounded-lg bg-muted/50 border">
             <div className="text-xs text-muted-foreground mb-1 flex items-center gap-1">
-              <MessageSquare className="h-3 w-3" />
-              Nội dung bình luận
+              <MessageSquare className="h-3 w-3" /> Nội dung bài viết
             </div>
-            <div className="text-sm whitespace-pre-wrap line-clamp-3">
-              {report.targetPreview}
+            <div className="text-sm whitespace-pre-wrap line-clamp-3 italic">
+              "{report.targetPreview}"
             </div>
           </div>
         )}
 
+        {/* 3. Trường hợp REVIEW: Hiện nội dung + Link Course */}
+        {isReview && (
+          <div className="space-y-2">
+            {/* Link đến khóa học */}
+            {report.reviewSlug && (
+               <div className="flex items-start gap-2">
+                <ExternalLink className="h-4 w-4 text-muted-foreground mt-0.5" />
+                <div>
+                  <span className="text-sm text-muted-foreground">Tại khóa học: </span>
+                  <a
+                    href={`/courses/${report.reviewSlug}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:underline break-all font-medium"
+                  >
+                    {/* Xem trang khóa học */}
+                    {report.reviewSlug}
+                  </a>
+                </div>
+              </div> 
+            )}
+            
+            {/* Nội dung review */}
+            {report.targetPreview && (
+              <div className="p-3 rounded-lg bg-yellow-50/50 dark:bg-yellow-900/10 border border-yellow-100 dark:border-yellow-900/20">
+                <div className="text-xs text-yellow-600 dark:text-yellow-500 mb-1 flex items-center gap-1">
+                  <Star className="h-3 w-3" /> Nội dung đánh giá
+                </div>
+                <div className="text-sm whitespace-pre-wrap line-clamp-3 italic">
+                  "{report.targetPreview}"
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Lý do báo cáo */}
         <div className="flex items-start gap-2 p-3 rounded-lg bg-destructive/5 border border-destructive/20">
           <AlertTriangle className="h-4 w-4 text-destructive mt-0.5 flex-shrink-0" />
           <div>
             <div className="text-xs text-muted-foreground mb-0.5">Lý do báo cáo</div>
-            <div className="text-sm">{report.reason}</div>
+            <div className="text-sm font-medium text-destructive">{report.reason}</div>
           </div>
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 pt-2 border-t">
+      {/* --- ACTION BUTTONS --- */}
+      <div className="flex flex-wrap items-center gap-2 pt-2 border-t pl-10">
         {isResolved ? (
           <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <ShieldCheck className="h-4 w-4 text-green-600" />
@@ -184,59 +236,47 @@ const ReportItem = memo(function ReportItem({ report, onResolve, onDelete, onHid
               Đã xử lý
             </Button>
 
+            {/* Actions cho Thread */}
             {isThread && (
               <>
-                {/* Logic Khóa/Mở khóa cho Thread */}
                 {report.targetPublished !== false ? (
-                  // targetPublished = true => Chưa khóa => Hiển thị nút Khóa
                   <Button size="sm" variant="outline" onClick={() => onLock(report.targetId)}>
-                    <Lock className="h-4 w-4 mr-1" />
-                    Khóa
+                    <Lock className="h-4 w-4 mr-1" /> Khóa
                   </Button>
                 ) : (
-                  // targetPublished = false => Đã khóa => Hiển thị nút Mở khóa
                   <Button size="sm" variant="outline" onClick={() => onUnlock(report.targetId)}>
-                    <Unlock className="h-4 w-4 mr-1" />
-                    Mở khóa
+                    <Unlock className="h-4 w-4 mr-1" /> Mở khóa
                   </Button>
                 )}
-
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-destructive hover:text-destructive"
-                  onClick={() => onDelete("THREAD", report.targetId)}
-                >
-                  <Trash2 className="h-4 w-4 mr-1" />
-                  Xóa chủ đề
+                <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onDelete("THREAD", report.targetId)}>
+                  <Trash2 className="h-4 w-4 mr-1" /> Xóa chủ đề
                 </Button>
               </>
             )}
 
-            {!isThread && (
+            {/* Actions cho Post */}
+            {isPost && (
               <>
-                {report.targetPublished !== false && (
+                {report.targetPublished !== false ? (
                   <Button size="sm" variant="outline" onClick={() => onHide(report.targetId)}>
-                    <EyeOff className="h-4 w-4 mr-1" />
-                    Ẩn
+                    <EyeOff className="h-4 w-4 mr-1" /> Ẩn
                   </Button>
-                )}
-                {report.targetPublished === false && (
+                ) : (
                   <Button size="sm" variant="outline" onClick={() => onUnhide(report.targetId)}>
-                    <Eye className="h-4 w-4 mr-1" />
-                    Hiện
+                    <Eye className="h-4 w-4 mr-1" /> Hiện
                   </Button>
                 )}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-destructive hover:text-destructive"
-                  onClick={() => onDelete("POST", report.targetId)}
-                >
-                  <Trash2 className="h-4 w-4 mr-1" />
-                  Xóa
+                <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onDelete("POST", report.targetId)}>
+                  <Trash2 className="h-4 w-4 mr-1" /> Xóa bài
                 </Button>
               </>
+            )}
+
+            {/* Actions cho Review (Chỉ có Xóa) */}
+            {isReview && (
+               <Button size="sm" variant="outline" className="text-destructive hover:text-destructive" onClick={() => onDelete("COURSE_REVIEW", report.targetId)}>
+                  <Trash2 className="h-4 w-4 mr-1" /> Xóa đánh giá
+               </Button>
             )}
           </>
         )}
@@ -245,24 +285,14 @@ const ReportItem = memo(function ReportItem({ report, onResolve, onDelete, onHid
   );
 });
 
+// LoadingSkeleton và EmptyState giữ nguyên như cũ
 function LoadingSkeleton() {
   return (
     <div className="space-y-3">
       {[1, 2, 3].map((i) => (
         <div key={i} className="border rounded-lg p-4 space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Skeleton className="h-8 w-8 rounded-lg" />
-              <Skeleton className="h-5 w-16 rounded-full" />
-            </div>
-            <Skeleton className="h-4 w-32" />
-          </div>
-          <Skeleton className="h-4 w-48" />
+          <Skeleton className="h-8 w-1/3" />
           <Skeleton className="h-16 w-full rounded-lg" />
-          <div className="flex gap-2 pt-2">
-            <Skeleton className="h-8 w-24 rounded" />
-            <Skeleton className="h-8 w-20 rounded" />
-          </div>
         </div>
       ))}
     </div>
@@ -277,7 +307,7 @@ function EmptyState() {
       </div>
       <h3 className="text-lg font-semibold mb-1">Không có báo cáo</h3>
       <p className="text-sm text-muted-foreground text-center max-w-sm">
-        Hiện tại không có báo cáo nào cần xử lý
+        Hiện tại không có báo cáo nào cần xử lý cho bộ lọc này.
       </p>
     </div>
   );
@@ -326,18 +356,27 @@ export default function AdminForumReportsPage() {
 
     setIsDeleting(true);
     try {
-      const result = deleteType === "THREAD" 
-        ? await adminDeleteThread(id)
-        : await adminDeletePost(id);
-      
-      if (result.success) {
-        toast.success(deleteType === "THREAD" ? "Đã xóa chủ đề" : "Đã xóa bài viết");
-        setItems(prev => prev.filter(item => item.targetId !== id));
-      } else {
-        toast.error(result.error || `Lỗi khi xóa ${deleteType === "THREAD" ? "chủ đề" : "bài viết"}`);
+      let result;
+      // Phân loại hàm xóa dựa trên Type
+      if (deleteType === "THREAD") {
+        result = await adminDeleteThread(id);
+      } else if (deleteType === "POST") {
+        result = await adminDeletePost(id);
+      } else if (deleteType === "COURSE_REVIEW") {
+        result = await adminDeleteReview(id); // Gọi API xóa Review
       }
-    } catch {
-      toast.error(`Lỗi khi xóa ${deleteConfirm.type === "THREAD" ? "chủ đề" : "bài viết"}`);
+
+      if (result && result.success) {
+        toast.success("Đã xóa nội dung vi phạm");
+        // Loại bỏ item khỏi danh sách ngay lập tức
+        setItems(prev => prev.filter(item => item.targetId !== id));
+        // Tùy chọn: Có thể gọi load(page) lại nếu muốn data sync chuẩn server
+      } else {
+        toast.error(result?.error || "Lỗi khi xóa nội dung");
+      }
+    } catch (e) {
+      toast.error("Lỗi hệ thống khi xóa");
+      console.error(e);
     } finally {
       setIsDeleting(false);
       setDeleteConfirm({ open: false, type: null, id: null });
@@ -345,6 +384,7 @@ export default function AdminForumReportsPage() {
   }, [deleteConfirm]);
 
   const handleResolve = useCallback(async (id) => {
+    // Optimistic update
     const previousItems = items;
     setItems(prev => prev.map(item => 
       item.id === id ? { ...item, resolvedAt: new Date().toISOString(), resolvedBy: "Admin" } : item
@@ -354,7 +394,7 @@ export default function AdminForumReportsPage() {
     if (result.success) {
       toast.success("Đã đánh dấu báo cáo là đã xử lý");
     } else {
-      setItems(previousItems);
+      setItems(previousItems); // Rollback nếu lỗi
       toast.error(result.error || "Không thể xử lý báo cáo");
     }
   }, [items]);
@@ -383,12 +423,10 @@ export default function AdminForumReportsPage() {
     }
   }, []);
 
-  // --- Thêm xử lý Khóa Thread ---
   const handleLock = useCallback(async (targetId) => {
     const result = await adminLockThread(targetId);
     if (result.success) {
       toast.success("Đã khóa chủ đề");
-      // Cập nhật targetPublished = false (nghĩa là đã bị khóa/ẩn)
       setItems(prev => prev.map(item => 
         item.targetId === targetId ? { ...item, targetPublished: false } : item
       ));
@@ -397,12 +435,10 @@ export default function AdminForumReportsPage() {
     }
   }, []);
 
-  // --- Thêm xử lý Mở khóa Thread ---
   const handleUnlock = useCallback(async (targetId) => {
     const result = await adminUnlockThread(targetId);
     if (result.success) {
       toast.success("Đã mở khóa chủ đề");
-      // Cập nhật targetPublished = true (nghĩa là đang hiển thị/mở)
       setItems(prev => prev.map(item => 
         item.targetId === targetId ? { ...item, targetPublished: true } : item
       ));
@@ -426,6 +462,16 @@ export default function AdminForumReportsPage() {
   useEffect(() => {
     load(page);
   }, [page, type, onlyOpen, load]);
+
+  // Text hiển thị trong dialog xóa
+  const getDeleteDialogText = () => {
+    switch (deleteConfirm.type) {
+      case "THREAD": return "chủ đề";
+      case "POST": return "bài viết";
+      case "COURSE_REVIEW": return "đánh giá";
+      default: return "nội dung";
+    }
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -457,8 +503,8 @@ export default function AdminForumReportsPage() {
                   onDelete={openDeleteConfirm}
                   onHide={handleHide}
                   onUnhide={handleUnhide}
-                  onLock={handleLock}     // Truyền prop onLock
-                  onUnlock={handleUnlock} // Truyền prop onUnlock
+                  onLock={handleLock}
+                  onUnlock={handleUnlock}
                 />
               ))}
             </div>
@@ -481,13 +527,10 @@ export default function AdminForumReportsPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Trash2 className="h-5 w-5 text-destructive" />
-              Xác nhận xóa {deleteConfirm.type === "THREAD" ? "chủ đề" : "bài viết"}?
+              Xác nhận xóa {getDeleteDialogText()}?
             </DialogTitle>
             <DialogDescription>
-              Hành động này không thể hoàn tác.{" "}
-              {deleteConfirm.type === "THREAD"
-                ? "Toàn bộ bài viết trong chủ đề này cũng sẽ bị xóa."
-                : "Bài viết này sẽ bị xóa vĩnh viễn khỏi hệ thống."}
+              Hành động này không thể hoàn tác. Nội dung vi phạm sẽ bị xóa vĩnh viễn khỏi hệ thống.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

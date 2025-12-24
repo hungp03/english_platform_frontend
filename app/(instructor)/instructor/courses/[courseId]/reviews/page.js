@@ -1,18 +1,32 @@
 "use client";
 import { useEffect, useState, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Loader2, Eye, EyeOff } from "lucide-react";
+import { ArrowLeft, Loader2, Eye, EyeOff, Flag } from "lucide-react"; // Thêm icon Flag
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Pagination } from "@/components/ui/pagination";
+import { Textarea } from "@/components/ui/textarea"; // Thêm Textarea
 import { 
   getInstructorCourseReviews, 
   getCourseReviewStats, 
   hideReview, 
   showReview 
 } from "@/lib/api/review";
+// Import API báo cáo
+import { reportReview } from "@/lib/api/forum"; 
+
+// Import Dialog Components
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+
 import { ReviewStats } from "@/components/reviews/review-stats";
 import { StarRating } from "@/components/reviews/star-rating";
 import ReviewFilters from "@/components/instructor/courses/reviews/review-filters";
@@ -36,11 +50,16 @@ export default function InstructorCourseReviewsPage() {
     rating: "ALL"
   });
 
+  // --- STATE CHO TÍNH NĂNG REPORT ---
+  const [reportDialogOpen, setReportDialogOpen] = useState(false);
+  const [reportingId, setReportingId] = useState(null);
+  const [reportReason, setReportReason] = useState("");
+  const [isReporting, setIsReporting] = useState(false);
+
   const loadData = useCallback(async () => {
     if (!courseId) return;
     setLoading(true);
     try {
-      // Chuẩn bị params
       const apiFilters = {};
       if (filters.isPublished !== "ALL") apiFilters.isPublished = filters.isPublished === "true";
       if (filters.rating !== "ALL") apiFilters.rating = parseInt(filters.rating);
@@ -48,7 +67,7 @@ export default function InstructorCourseReviewsPage() {
       const [statsRes, reviewsRes] = await Promise.all([
         getCourseReviewStats(courseId),
         getInstructorCourseReviews(courseId, { 
-          page: page, // API custom của bạn thường dùng page=1, nếu dùng 0-index thì sửa thành page - 1
+          page: page, 
           size: 10, 
           ...apiFilters 
         }), 
@@ -56,13 +75,9 @@ export default function InstructorCourseReviewsPage() {
 
       if (statsRes.success) setStats(statsRes.data);
       
-      // --- SỬA LỖI Ở ĐÂY ---
       if (reviewsRes.success) {
-        // API trả về { meta: {...}, result: [...] }
         const data = reviewsRes.data;
-        // Dùng .result thay vì .content
         setReviews(data?.result || []);
-        // Lấy tổng số trang từ meta
         setTotalPages(data?.meta?.pages || 1);
       }
     } catch (error) {
@@ -77,22 +92,19 @@ export default function InstructorCourseReviewsPage() {
     loadData();
   }, [loadData]);
 
-  // Xử lý thay đổi bộ lọc
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));
-    setPage(1); // Reset về trang 1 khi lọc
+    setPage(1); 
   };
 
-  // Xử lý ẩn/hiện review
+  // Logic ẩn/hiện (đang giữ nguyên nhưng không dùng trên UI theo yêu cầu)
   const toggleVisibility = async (review) => {
     const action = review.isPublished ? hideReview : showReview;
     const actionName = review.isPublished ? "Ẩn" : "Hiện";
-
     try {
       const res = await action(review.id);
       if (res.success) {
         toast.success(`Đã ${actionName.toLowerCase()} đánh giá thành công`);
-        // Cập nhật UI local để tránh reload toàn bộ
         setReviews(prev => prev.map(r => 
           r.id === review.id ? { ...r, isPublished: !r.isPublished } : r
         ));
@@ -101,6 +113,36 @@ export default function InstructorCourseReviewsPage() {
       }
     } catch (err) {
       toast.error("Lỗi hệ thống");
+    }
+  };
+
+  // --- LOGIC XỬ LÝ REPORT ---
+  const handleOpenReport = (reviewId) => {
+    setReportingId(reviewId);
+    setReportReason("");
+    setReportDialogOpen(true);
+  };
+
+  const handleSubmitReport = async () => {
+    if (!reportReason.trim()) {
+      toast.error("Vui lòng nhập lý do báo cáo.");
+      return;
+    }
+    
+    setIsReporting(true);
+    try {
+      // Gọi API reportReview (đã import từ api/forum)
+      const res = await reportReview(reportingId, reportReason);
+      if (res.success) {
+        toast.success("Đã gửi báo cáo thành công. Admin sẽ xem xét.");
+        setReportDialogOpen(false);
+      } else {
+        toast.error(res.error || "Không thể gửi báo cáo.");
+      }
+    } catch (error) {
+      toast.error("Có lỗi xảy ra khi gửi báo cáo.");
+    } finally {
+      setIsReporting(false);
     }
   };
 
@@ -124,9 +166,9 @@ export default function InstructorCourseReviewsPage() {
           Quay lại danh sách
         </Button>
         <div>
-          <h1 className="text-2xl font-bold">Quản lý đánh giá</h1>
+          <h1 className="text-2xl font-bold">Đánh giá của khóa học</h1>
           <p className="text-muted-foreground text-sm">
-            Xem và kiểm duyệt phản hồi từ học viên
+            Đánh giá từ học viên của khóa học
           </p>
         </div>
       </div>
@@ -191,23 +233,31 @@ export default function InstructorCourseReviewsPage() {
                           </div>
                         </div>
 
-                        {/* Action Button */}
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className={review.isPublished ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50" : "text-green-600 hover:text-green-700 hover:bg-green-50"}
-                          onClick={() => toggleVisibility(review)}
-                        >
-                          {review.isPublished ? (
-                            <>
-                              <EyeOff className="w-4 h-4 mr-2" /> Ẩn đánh giá
-                            </>
-                          ) : (
-                            <>
-                              <Eye className="w-4 h-4 mr-2" /> Hiện đánh giá
-                            </>
-                          )}
-                        </Button>
+                        {/* Action Buttons */}
+                        <div className="flex items-center gap-1">
+                          
+                          {/* Nút Báo cáo (MỚI) */}
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                            title="Báo cáo vi phạm"
+                            onClick={() => handleOpenReport(review.id)}
+                          >
+                            <Flag className="w-4 h-4" />
+                          </Button>
+
+                          {/* Nút Ẩn/Hiện (Đang ẩn theo yêu cầu của bạn) */}
+                          {/* <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className={review.isPublished ? "text-orange-600 hover:text-orange-700 hover:bg-orange-50" : "text-green-600 hover:text-green-700 hover:bg-green-50"}
+                            onClick={() => toggleVisibility(review)}
+                          >
+                            {review.isPublished ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </Button> 
+                          */}
+                        </div>
                       </div>
                       
                       {/* Comment Content */}
@@ -233,6 +283,47 @@ export default function InstructorCourseReviewsPage() {
           </div>
         )}
       </div>
+
+      {/* --- DIALOG BÁO CÁO VI PHẠM --- */}
+      <Dialog open={reportDialogOpen} onOpenChange={setReportDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Báo cáo đánh giá</DialogTitle>
+            <DialogDescription>
+              Hãy cho chúng tôi biết lý do bạn báo cáo đánh giá này. Nội dung không phù hợp sẽ bị xóa.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <Textarea 
+                placeholder="Ví dụ: Ngôn từ đả kích, spam, không liên quan... Ít nhất 10 kí tự"
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                rows={4}
+            />
+            {/* THÊM: Hiển thị đếm ký tự để người dùng biết */}
+            {/* <div className={`text-xs text-right transition-colors ${reportReason.trim().length <= 10 ? 'text-destructive' : 'text-muted-foreground'}`}>
+                {reportReason.trim().length <= 10 
+                  ? `Cần thêm ${11 - reportReason.trim().length} ký tự nữa` 
+                  : `${reportReason.trim().length} ký tự (Hợp lệ)`}
+            </div> */}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setReportDialogOpen(false)} disabled={isReporting}>
+                Hủy
+            </Button>
+            
+            {/* SỬA: Thêm điều kiện reportReason.trim().length <= 10 vào disabled */}
+            <Button 
+                type="submit" 
+                onClick={handleSubmitReport} 
+                disabled={isReporting || reportReason.trim().length < 10}
+            >
+              {isReporting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              Gửi báo cáo
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
