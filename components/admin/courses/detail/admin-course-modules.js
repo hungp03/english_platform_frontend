@@ -5,8 +5,8 @@ import { ChevronDown, ChevronRight, FileText, CheckCircle2, Clock, PlayCircle, H
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
-import { getCourseModules } from "@/lib/api/course-module"
-import { listCourseLessons } from "@/lib/api/lesson"
+import { getPublishedModules } from "@/lib/api/course-module"
+import { listPublishedCourseLessons } from "@/lib/api/lesson"
 import { AdminLessonPreviewDialog } from "./admin-lesson-preview-dialog"
 
 export function AdminCourseModules({ courseId }) {
@@ -26,10 +26,10 @@ export function AdminCourseModules({ courseId }) {
 
     const fetchModules = async () => {
         setLoading(true)
-        const result = await getCourseModules(courseId)
+        const result = await getPublishedModules(courseId)
 
-        if (result) {
-            setModules(result || [])
+        if (result.success) {
+            setModules(result.data || [])
         }
 
         setLoading(false)
@@ -52,7 +52,7 @@ export function AdminCourseModules({ courseId }) {
         if (!isCurrentlyExpanded && !moduleLessons[moduleId]) {
             setLoadingLessons((prev) => new Set(prev).add(moduleId))
 
-            const result = await listCourseLessons(moduleId)
+            const result = await listPublishedCourseLessons(moduleId)
 
             if (result.success) {
                 setModuleLessons((prev) => ({

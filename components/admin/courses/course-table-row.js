@@ -150,7 +150,7 @@ const CourseTableRow = memo(function CourseTableRow({ course, onStatusUpdate }) 
 
         <td className="px-4 py-4 whitespace-nowrap text-sm font-medium">
           <div className="flex space-x-1">
-            {course.status === "PUBLISHED" && (
+            {(course.status === "PUBLISHED" || course.status === "PENDING_REVIEW") && (
               <Link href={`/admin/courses/${course.slug}`}>
                 <Button
                   variant="ghost"

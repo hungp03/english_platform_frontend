@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -20,11 +20,10 @@ import {
   Layers,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Separator } from "@/components/ui/separator";
-import { getCourseBySlug } from "@/lib/api/course";
+import { getAdminCourseBySlug } from "@/lib/api/course";
 import { formatCurrency, cn } from "@/lib/utils";
 import { AdminCourseModules } from "@/components/admin/courses/detail";
 
@@ -296,7 +295,7 @@ export default function AdminCourseDetailPage() {
     setLoading(true);
     setError(null);
 
-    const result = await getCourseBySlug(params.slug);
+    const result = await getAdminCourseBySlug(params.slug);
 
     if (result.success) {
       setCourse(result.data);
