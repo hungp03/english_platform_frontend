@@ -28,13 +28,13 @@ export default function ContentForumSection({ overview }) {
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Forum Posts</p>
             <p className="text-2xl font-bold">{overview.content.totalForumPosts}</p>
+            <p className="text-xs text-muted-foreground">
+              {overview.content.totalViews} lượt xem
+            </p>
           </div>
           <div className="space-y-1">
             <p className="text-sm text-muted-foreground">Comments</p>
             <p className="text-2xl font-bold">{overview.content.totalComments}</p>
-            <p className="text-xs text-muted-foreground">
-              {overview.content.totalViews} lượt xem
-            </p>
           </div>
         </div>
       </CardContent>

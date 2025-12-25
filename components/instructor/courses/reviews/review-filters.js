@@ -16,8 +16,6 @@ export default function ReviewFilters({ filters, onChange }) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">Tất cả trạng thái</SelectItem>
-            <SelectItem value="true">Công khai</SelectItem>
-            <SelectItem value="false">Đã ẩn</SelectItem>
           </SelectContent>
         </Select>
       </div>
