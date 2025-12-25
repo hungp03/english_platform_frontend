@@ -24,7 +24,7 @@ export default function PendingActionsSection({ pendingActions }) {
           )}
           {pendingActions.forumReportsCount > 0 && (
             <Badge variant="secondary">
-              {pendingActions.forumReportsCount} báo cáo forum
+              {pendingActions.forumReportsCount} báo cáo
             </Badge>
           )}
           {pendingActions.pendingOrdersCount > 0 && (
