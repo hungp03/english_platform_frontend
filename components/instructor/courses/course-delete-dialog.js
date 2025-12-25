@@ -23,6 +23,7 @@ export default function CourseDeleteDialog({ open, onOpenChange, course, onConfi
     try {
       await onConfirm?.(course)
     } finally {
+      setLoading(false)
       setTimeout(() => { calledRef.current = false }, 300)
     }
   }
